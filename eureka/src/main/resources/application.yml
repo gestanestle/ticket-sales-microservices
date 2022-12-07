@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: eureka
+
+eureka:
+  client:
+    fetch-registry: false
+    register-with-eureka: false
+
+server:
+  port: 8761
+  error:
+    include-binding-errors: always
+    include-message: always
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info

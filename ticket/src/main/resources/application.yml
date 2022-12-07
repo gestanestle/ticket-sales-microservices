@@ -1,0 +1,34 @@
+# Spring Boot configuration
+spring:
+  application:
+    name: ticket
+
+  data:
+    mongodb:
+#      authentication-database: admin
+#      username: root
+#      password: root
+      database: ticket
+      port: 27017
+      host: localhost
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.hibernate: debug
+
+# Server configuration
+server:
+  port: 8082
+  error:
+    include-binding-errors: always
+    include-message: always
+
+# Eureka
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
