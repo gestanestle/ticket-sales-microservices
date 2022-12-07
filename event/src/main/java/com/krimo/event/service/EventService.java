@@ -3,6 +3,7 @@ package com.krimo.event.service;
 import com.krimo.event.data.Event;
 import com.krimo.event.data.Section;
 import com.krimo.event.dto.EventDTO;
+import com.krimo.event.exception.ApiRequestException;
 import com.krimo.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,19 @@ public class EventService {
 
         HashMap<Section, Integer> seatAttendee = event.getRegisteredAttendees() == null ?  new HashMap<>() : event.getRegisteredAttendees();
 
-        if(seatAttendee.containsKey(section)) {
+        HashMap<Section, Integer> maxCapacity = event.getMaxCapacity();
+
+        for (Section key: seatAttendee.keySet()) {
+            if (seatAttendee.get(key) >= maxCapacity.get(key)) {
+                fullSections.add(key);
+            }
+        }
+
+        if (fullSections.contains(section)) {
+            throw new ApiRequestException("Section is already full.");
+        }
+
+        if (seatAttendee.containsKey(section)) {
             seatAttendee.put(section, seatAttendee.get(section)+1);
         } else
             seatAttendee.put(section, 1);
