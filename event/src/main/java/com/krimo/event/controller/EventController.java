@@ -1,8 +1,8 @@
 package com.krimo.event.controller;
 
 import com.krimo.event.data.Event;
-import com.krimo.event.data.Section;
 import com.krimo.event.dto.EventDTO;
+import com.krimo.event.dto.FullSectionsCollection;
 import com.krimo.event.dto.TicketDTO;
 import com.krimo.event.service.EventService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -54,10 +53,10 @@ public class EventController {
 
 
     @PutMapping(path = "{eventCode}/attendees")
-    public ResponseEntity<Collection<Section>> addAttendees(@PathVariable("eventCode") String eventCode,
-                                                            @RequestBody TicketDTO ticketDTO) {
-        Collection<Section> fullSections = eventService.addAttendee(eventCode, ticketDTO.getSection());
-        return new ResponseEntity<>(fullSections, HttpStatus.OK);
+    public ResponseEntity<FullSectionsCollection> addAttendees(@PathVariable("eventCode") String eventCode,
+                                                               @RequestBody TicketDTO ticketDTO) {
+        FullSectionsCollection fsc = eventService.addAttendee(eventCode, ticketDTO.getSection());
+        return new ResponseEntity<>(fsc, HttpStatus.OK);
     }
 
 }

@@ -20,9 +20,9 @@ public class TicketController {
     private final TicketService ticketService;
 
     @PostMapping()
-    public ResponseEntity<String> buyTicket(@RequestBody TicketDTO ticketDTO) throws JsonProcessingException {
-        String ticket_code = ticketService.buyTicket(ticketDTO);
-        return new ResponseEntity<>(ticket_code, HttpStatus.OK);
+    public ResponseEntity<Ticket> buyTicket(@RequestBody TicketDTO ticketDTO) throws JsonProcessingException {
+        Ticket ticket = ticketService.buyTicket(ticketDTO);
+        return new ResponseEntity<>(ticket, HttpStatus.OK);
     }
 
     @GetMapping(path = "/all")

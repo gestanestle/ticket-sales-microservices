@@ -3,6 +3,7 @@ package com.krimo.event.service;
 import com.krimo.event.data.Event;
 import com.krimo.event.data.Section;
 import com.krimo.event.dto.EventDTO;
+import com.krimo.event.dto.FullSectionsCollection;
 import com.krimo.event.exception.ApiRequestException;
 import com.krimo.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,10 +48,10 @@ public class EventService {
         eventRepository.save(updatedEvent);
     }
 
-    public Collection<Section> addAttendee(String eventCode, Section section) {
+    public FullSectionsCollection addAttendee(String eventCode, Section section) {
 
         // Sections that have already reached max capacity
-        Collection<Section> fullSections = new ArrayList<>();
+        Collection<Section> fullSectionsCollection = new ArrayList<>();
 
         Event event = eventRepository.findByEventCode(eventCode).get();
 
@@ -60,11 +61,11 @@ public class EventService {
 
         for (Section key: seatAttendee.keySet()) {
             if (seatAttendee.get(key) >= maxCapacity.get(key)) {
-                fullSections.add(key);
+                fullSectionsCollection.add(key);
             }
         }
 
-        if (fullSections.contains(section)) {
+        if (fullSectionsCollection.contains(section)) {
             throw new ApiRequestException("Section is already full.");
         }
 
@@ -76,7 +77,7 @@ public class EventService {
         event.setRegisteredAttendees(seatAttendee);
         eventRepository.save(event);
 
-        return fullSections;
+        return new FullSectionsCollection(fullSectionsCollection);
     }
 
     public void deleteEvent(String eventCode) {
