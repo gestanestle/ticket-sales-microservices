@@ -3,15 +3,17 @@ package com.krimo.event.service;
 import com.krimo.event.data.Event;
 import com.krimo.event.data.Section;
 import com.krimo.event.dto.EventDTO;
+import com.krimo.event.exception.ApiRequestException;
 import com.krimo.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
-public class EventService {
+public class EventService{
 
     private final EventRepository eventRepository;
 
@@ -46,24 +48,36 @@ public class EventService {
         eventRepository.save(updatedEvent);
     }
 
-    public Collection<Section> addAttendee(String eventCode, Section section) {
+    public synchronized void addAttendee(String eventCode, Section section) {
 
         // Sections that have already reached max capacity
-        Collection<Section> fullSections = new ArrayList<>();
+        Collection<Section> fullSectionsCollection = new ArrayList<>();
 
         Event event = eventRepository.findByEventCode(eventCode).get();
 
         HashMap<Section, Integer> seatAttendee = event.getRegisteredAttendees() == null ?  new HashMap<>() : event.getRegisteredAttendees();
 
-        if(seatAttendee.containsKey(section)) {
-            seatAttendee.put(section, seatAttendee.get(section)+1);
+        HashMap<Section, Integer> maxCapacity = event.getMaxCapacity();
+
+        for (Section key: seatAttendee.keySet()) {
+            if (seatAttendee.get(key) >= maxCapacity.get(key)) {
+                fullSectionsCollection.add(key);
+            }
+        }
+
+        if (fullSectionsCollection.contains(section)) {
+            throw new ApiRequestException("Section is already full.");
+        }
+
+        if (seatAttendee.containsKey(section)) {
+            AtomicInteger integer = new AtomicInteger(seatAttendee.get(section));
+            seatAttendee.put(section, integer.incrementAndGet());
         } else
             seatAttendee.put(section, 1);
 
         event.setRegisteredAttendees(seatAttendee);
         eventRepository.save(event);
 
-        return fullSections;
     }
 
     public void deleteEvent(String eventCode) {

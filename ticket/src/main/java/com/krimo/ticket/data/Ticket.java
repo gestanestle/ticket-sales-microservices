@@ -14,7 +14,9 @@ public class Ticket {
 
     @Id
     private String ticketCode;
+    private String eventCode;
     private Section section;
     private LocalDateTime purchaseDateTime;
+    private String owner;
 
 }

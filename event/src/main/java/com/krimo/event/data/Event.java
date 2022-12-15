@@ -24,11 +24,17 @@ public class Event {
     private LocalDateTime dateTime;
     private String title;
     private String details;
-    private Integer maxCapacity;
+    private HashMap<Section, Integer> maxCapacity;
     private HashMap<Section, Integer> registeredAttendees;
     private String organizer;
 
-    public Event(String eventCode, String venue, LocalDateTime dateTime, String title, String details, Integer maxCapacity, HashMap<Section, Integer> registeredAttendees, String organizer) {
+    public Event(String eventCode,
+                 String venue, LocalDateTime dateTime,
+                 String title,
+                 String details,
+                 HashMap<Section, Integer> maxCapacity,
+                 HashMap<Section, Integer> registeredAttendees,
+                 String organizer) {
         this.eventCode = eventCode;
         this.venue = venue;
         this.dateTime = dateTime;

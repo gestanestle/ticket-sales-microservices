@@ -13,6 +13,7 @@
         <module>event</module>
         <module>eureka</module>
         <module>ticket</module>
+        <module>api-gateway</module>
     </modules>
 
     <properties>

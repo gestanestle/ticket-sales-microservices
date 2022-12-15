@@ -2,6 +2,7 @@ package com.krimo.ticket.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.krimo.ticket.data.Event;
+import com.krimo.ticket.dto.ReturnObject;
 import com.krimo.ticket.data.Ticket;
 import com.krimo.ticket.dto.TicketDTO;
 import com.krimo.ticket.service.TicketService;
@@ -20,9 +21,15 @@ public class TicketController {
     private final TicketService ticketService;
 
     @PostMapping()
-    public ResponseEntity<String> buyTicket(@RequestBody TicketDTO ticketDTO) throws JsonProcessingException {
-        String ticket_code = ticketService.buyTicket(ticketDTO);
-        return new ResponseEntity<>(ticket_code, HttpStatus.OK);
+    public ResponseEntity<Object> buyTicket(@RequestBody TicketDTO ticketDTO) throws JsonProcessingException {
+        ReturnObject returnObject = ticketService.buyTicket(ticketDTO);
+
+        if (returnObject.getTicket() == null) {
+            return new ResponseEntity<>(returnObject.getErrorMsg(), HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(returnObject.getTicket(), HttpStatus.OK);
+
     }
 
     @GetMapping(path = "/all")

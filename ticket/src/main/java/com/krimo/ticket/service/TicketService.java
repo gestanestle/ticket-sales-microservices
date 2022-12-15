@@ -3,16 +3,17 @@ package com.krimo.ticket.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krimo.ticket.data.Event;
-import com.krimo.ticket.data.Section;
+import com.krimo.ticket.dto.ReturnObject;
 import com.krimo.ticket.data.Ticket;
 import com.krimo.ticket.dto.TicketDTO;
+import com.krimo.ticket.exception.ApiRequestException;
 import com.krimo.ticket.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,36 +28,39 @@ public class TicketService {
     private final ObjectMapper objectMapper;
     private final TicketRepository ticketRepository;
 
-    public String buyTicket(TicketDTO ticketDTO) throws JsonProcessingException {
+    public synchronized ReturnObject buyTicket(TicketDTO ticketDTO) throws JsonProcessingException {
 
-        String data = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ticketDTO);
+        final String errorMsg = String.format("Tickets for %s section are sold out.", ticketDTO.getSection());
 
-        final String uri = "http://localhost:8081/api/v1/event/%s/attendees";
+        final String data = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ticketDTO);
 
-        Collection<Section> fullSections = webClient
-                .put()
-                .uri(String.format(uri, ticketDTO.getEventCode()))
-                .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(data))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Collection<Section>>() {})
-                .block();
+        final String uri = "http://localhost:9000/api/v1/event/%s/attendees";
 
-        if(fullSections!=null) {
-            if (fullSections.contains(ticketDTO.getSection())) {
-                return null;
-            }
+        try {
+            webClient
+                    .put()
+                    .uri(String.format(uri, ticketDTO.getEventCode()))
+                    .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(data))
+                    .retrieve()
+                    .onStatus(httpStatus -> httpStatus.value() == 400,
+                            error -> Mono.error(new ApiRequestException(errorMsg)))
+                    .bodyToFlux(Void.class)
+                    .blockFirst();
+
+        } catch (ApiRequestException e) {
+            return new ReturnObject(errorMsg);
         }
-//                .body(Mono.just(ticketDTO), TicketDTO.class);
-//                .bodyValue(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ticketDTO));
 
         String ticketCode = UUID.randomUUID().toString();
 
         Ticket ticket = Ticket.builder()
                 .ticketCode(ticketCode)
+                .eventCode(ticketDTO.getEventCode())
                 .section(ticketDTO.getSection())
                 .purchaseDateTime(LocalDateTime.now())
+                .owner(ticketDTO.getOwner())
                 .build();
 
         Collection<Ticket> tickets = new ArrayList<>();
@@ -71,7 +75,7 @@ public class TicketService {
         event.setTickets(tickets);
         ticketRepository.save(event);
 
-        return ticketCode;
+        return new ReturnObject(ticket);
     }
 
     public List<Event> allEvents () {
