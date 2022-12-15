@@ -1,5 +1,6 @@
-package com.krimo.ticket.data;
+package com.krimo.ticket.dto;
 
+import com.krimo.ticket.data.Section;
 import lombok.Data;
 
 import java.util.Collection;

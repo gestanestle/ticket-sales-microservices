@@ -1,5 +1,6 @@
-package com.krimo.ticket.data;
+package com.krimo.ticket.dto;
 
+import com.krimo.ticket.data.Ticket;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

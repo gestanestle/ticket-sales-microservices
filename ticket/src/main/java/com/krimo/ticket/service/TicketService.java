@@ -3,7 +3,7 @@ package com.krimo.ticket.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krimo.ticket.data.Event;
-import com.krimo.ticket.data.ReturnObject;
+import com.krimo.ticket.dto.ReturnObject;
 import com.krimo.ticket.data.Ticket;
 import com.krimo.ticket.dto.TicketDTO;
 import com.krimo.ticket.exception.ApiRequestException;
@@ -34,7 +34,7 @@ public class TicketService {
 
         final String data = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ticketDTO);
 
-        final String uri = "http://localhost:8081/api/v1/event/%s/attendees";
+        final String uri = "http://localhost:9000/api/v1/event/%s/attendees";
 
         try {
             webClient
