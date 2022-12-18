@@ -23,7 +23,6 @@ spring:
           predicates:
           - Path=/api/v1/ticket/**
 
-
 # Logger configuration
 logging:
   pattern:

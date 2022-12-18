@@ -10,10 +10,11 @@
     <version>1.0-SNAPSHOT</version>
 
     <modules>
-        <module>event</module>
-        <module>eureka</module>
-        <module>ticket</module>
         <module>api-gateway</module>
+        <module>eureka</module>
+        <module>event</module>
+        <module>ticket</module>
+        <module>email</module>
     </modules>
 
     <properties>

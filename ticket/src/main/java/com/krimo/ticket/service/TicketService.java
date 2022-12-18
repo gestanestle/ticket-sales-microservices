@@ -3,9 +3,11 @@ package com.krimo.ticket.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krimo.ticket.data.Event;
+import com.krimo.ticket.dto.EventList;
 import com.krimo.ticket.dto.ReturnObject;
 import com.krimo.ticket.data.Ticket;
 import com.krimo.ticket.dto.TicketDTO;
+import com.krimo.ticket.dto.TicketList;
 import com.krimo.ticket.exception.ApiRequestException;
 import com.krimo.ticket.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
@@ -78,11 +80,11 @@ public class TicketService {
         return new ReturnObject(ticket);
     }
 
-    public List<Event> allEvents () {
-        return ticketRepository.findAll().stream().toList();
+    public EventList allEvents () {
+        return new EventList(ticketRepository.findAll().stream().toList());
     }
 
-    public List<Ticket> eventTickets(String eventCode) {
-        return ticketRepository.findByEventCode(eventCode).get().getTickets().stream().toList();
+    public TicketList eventTickets(String eventCode) {
+        return new TicketList(ticketRepository.findByEventCode(eventCode).get().getTickets().stream().toList());
     }
 }

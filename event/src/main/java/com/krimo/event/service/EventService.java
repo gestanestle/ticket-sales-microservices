@@ -1,11 +1,15 @@
 package com.krimo.event.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krimo.event.data.Event;
 import com.krimo.event.data.Section;
 import com.krimo.event.dto.EventDTO;
 import com.krimo.event.exception.ApiRequestException;
 import com.krimo.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -15,7 +19,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class EventService{
 
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private final EventRepository eventRepository;
+    private final ObjectMapper objectMapper;
+
+    @Value("${event.topic.name}")
+    String topic;
 
     public String createEvent(EventDTO eventDTO) {
 
@@ -44,8 +53,19 @@ public class EventService{
         Event updatedEvent = eventBuild(eventDTO);
         updatedEvent.setEventCode(eventCode);
         updatedEvent.setId(event.getId());
+        updatedEvent.setRegisteredAttendees(event.getRegisteredAttendees());
 
         eventRepository.save(updatedEvent);
+
+        try {
+            String eventUpdate = objectMapper.writeValueAsString(updatedEvent);
+            kafkaTemplate.send(topic, eventUpdate);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 
     public synchronized void addAttendee(String eventCode, Section section) {
@@ -83,6 +103,7 @@ public class EventService{
     public void deleteEvent(String eventCode) {
 
         Long id = eventRepository.findByEventCode(eventCode).get().getId();
+
         eventRepository.deleteById(id);
     }
 

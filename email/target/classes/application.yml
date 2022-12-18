@@ -1,23 +1,8 @@
 # Spring Boot configuration
 spring:
   application:
-    name: event
+    name: email
 
-  # Database
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/event
-    username: postgres
-    password: postgres
-  # JPA properties
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    open-in-view: false
-    generate-ddl: true
   # Kafka producer properties
   kafka:
     producer:
@@ -25,11 +10,20 @@ spring:
       key-serializer: ${serializer}
       value-serializer: ${serializer}
 
-serializer: org.apache.kafka.common.serialization.StringSerializer
+  # Mailer
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: eurhainez@gmail.com
+    password: touqamftsvurcwaj
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
-event:
-  topic:
-    name: event-updates
+serializer: org.apache.kafka.common.serialization.StringSerializer
 
 # Logger configuration
 logging:
@@ -41,7 +35,7 @@ logging:
 
 # Server configuration
 server:
-  port: 8081
+  port: 8083
   error:
     include-binding-errors: always
     include-message: always

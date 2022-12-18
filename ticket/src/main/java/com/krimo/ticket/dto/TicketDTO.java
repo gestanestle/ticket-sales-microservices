@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.krimo.ticket.data.Section;
 import lombok.*;
 
+
 @Data
 public class TicketDTO {
 
