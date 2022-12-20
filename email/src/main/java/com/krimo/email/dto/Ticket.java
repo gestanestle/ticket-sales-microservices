@@ -1,4 +1,4 @@
-package com.krimo.ticket.data;
+package com.krimo.email.dto;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -17,6 +17,6 @@ public class Ticket {
     private String eventCode;
     private Section section;
     private LocalDateTime purchaseDateTime;
-    private String customerEmail;
+    private String owner;
 
 }

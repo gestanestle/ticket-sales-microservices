@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.krimo.ticket.data.Section;
 import lombok.*;
 
+
 @Data
 public class TicketDTO {
 
     @JsonProperty("event_code")
     private String eventCode;
     private Section section;
-    private String owner;
+    @JsonProperty("customer_email")
+    private String customerEmail;
 
 }

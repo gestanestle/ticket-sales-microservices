@@ -50,7 +50,6 @@ public class EventController {
         return new ResponseEntity<>(eventCode, HttpStatus.OK);
     }
 
-
     @PutMapping(path = "{eventCode}/attendees")
     public ResponseEntity<Object> addAttendees(@PathVariable("eventCode") String eventCode,
                                                                @RequestBody TicketDTO ticketDTO) {
