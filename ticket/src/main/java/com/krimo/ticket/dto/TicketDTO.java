@@ -11,6 +11,7 @@ public class TicketDTO {
     @JsonProperty("event_code")
     private String eventCode;
     private Section section;
-    private String owner;
+    @JsonProperty("customer_email")
+    private String customerEmail;
 
 }

@@ -39,7 +39,9 @@ public class EventService{
     }
 
     public Event readEvent(String eventCode) {
-        return eventRepository.findByEventCode(eventCode).get();
+        return eventRepository.findByEventCode(eventCode).isPresent()
+                ? eventRepository.findByEventCode(eventCode).get()
+                : null;
     }
 
     public List<Event> readAllEvents() {
@@ -48,7 +50,11 @@ public class EventService{
 
     public void updateEvent(String eventCode, EventDTO eventDTO) {
 
-        Event event = eventRepository.findByEventCode(eventCode).get();
+        Event event = readEvent(eventCode);
+
+        if(event == null) {
+            return;
+        }
 
         Event updatedEvent = eventBuild(eventDTO);
         updatedEvent.setEventCode(eventCode);
@@ -64,47 +70,39 @@ public class EventService{
             e.printStackTrace();
         }
 
-
-
     }
 
     public synchronized void addAttendee(String eventCode, Section section) {
 
-        // Sections that have already reached max capacity
-        Collection<Section> fullSectionsCollection = new ArrayList<>();
+        Event event = readEvent(eventCode);
 
-        Event event = eventRepository.findByEventCode(eventCode).get();
+        if(event == null) {
+            return;
+        }
 
-        HashMap<Section, Integer> seatAttendee = event.getRegisteredAttendees() == null ?  new HashMap<>() : event.getRegisteredAttendees();
+        HashMap<Section, Integer> registeredAttendees = event.getRegisteredAttendees() == null ?  new HashMap<>() : event.getRegisteredAttendees();
 
         HashMap<Section, Integer> maxCapacity = event.getMaxCapacity();
 
-        for (Section key: seatAttendee.keySet()) {
-            if (seatAttendee.get(key) >= maxCapacity.get(key)) {
-                fullSectionsCollection.add(key);
+        for (Section key: registeredAttendees.keySet()) {
+            if (registeredAttendees.get(key) >= maxCapacity.get(key)) {
+                throw new ApiRequestException("Section is already full.");
             }
         }
 
-        if (fullSectionsCollection.contains(section)) {
-            throw new ApiRequestException("Section is already full.");
-        }
-
-        if (seatAttendee.containsKey(section)) {
-            AtomicInteger integer = new AtomicInteger(seatAttendee.get(section));
-            seatAttendee.put(section, integer.incrementAndGet());
+        if (registeredAttendees.containsKey(section)) {
+            AtomicInteger integer = new AtomicInteger(registeredAttendees.get(section));
+            registeredAttendees.put(section, integer.incrementAndGet());
         } else
-            seatAttendee.put(section, 1);
+            registeredAttendees.put(section, 1);
 
-        event.setRegisteredAttendees(seatAttendee);
+        event.setRegisteredAttendees(registeredAttendees);
         eventRepository.save(event);
-
     }
 
     public void deleteEvent(String eventCode) {
 
-        Long id = eventRepository.findByEventCode(eventCode).get().getId();
-
-        eventRepository.deleteById(id);
+        eventRepository.deleteById(readEvent(eventCode).getId());
     }
 
     // Reusable method - entity mapping

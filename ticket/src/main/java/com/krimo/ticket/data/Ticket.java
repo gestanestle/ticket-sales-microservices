@@ -17,6 +17,6 @@ public class Ticket {
     private String eventCode;
     private Section section;
     private LocalDateTime purchaseDateTime;
-    private String owner;
+    private String customerEmail;
 
 }

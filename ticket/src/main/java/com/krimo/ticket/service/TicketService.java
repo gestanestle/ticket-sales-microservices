@@ -62,7 +62,7 @@ public class TicketService {
                 .eventCode(ticketDTO.getEventCode())
                 .section(ticketDTO.getSection())
                 .purchaseDateTime(LocalDateTime.now())
-                .owner(ticketDTO.getOwner())
+                .customerEmail(ticketDTO.getCustomerEmail())
                 .build();
 
         Collection<Ticket> tickets = new ArrayList<>();
@@ -85,6 +85,15 @@ public class TicketService {
     }
 
     public TicketList eventTickets(String eventCode) {
-        return new TicketList(ticketRepository.findByEventCode(eventCode).get().getTickets().stream().toList());
+
+        TicketList ticketList = new TicketList();
+
+        try {
+            ticketList.setTicketList(ticketRepository.findByEventCode(eventCode).get().getTickets().stream().toList());
+        }catch (NoSuchElementException e) {
+            return null;
+        }
+        return ticketList;
+
     }
 }

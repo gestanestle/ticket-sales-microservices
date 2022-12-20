@@ -18,9 +18,9 @@ public class EmailFormatter {
 
         final String msg =
                 """
-                        This is to inform you that the event with the code %1$s has been updated by the organizer. See below for the updated event details: \s
+                        This is to inform you that the '%1$s' has been updated by the organizer. See below for the updated event details: \s
                         \s
-                        Title: %2$s \s
+                        Event Code: %2$s \s
                         Details; %3$s \s
                         Venue: %4$s \s
                         Date and Time: %5$s \s
@@ -28,8 +28,8 @@ public class EmailFormatter {
                         """;
 
         emailSenderService.sendMaiL(ownerEmail, sub,String.format(msg,
-                                            event.getEventCode(),
                                             event.getTitle(),
+                                            event.getEventCode(),
                                             event.getDetails(),
                                             event.getVenue(),
                                             event.getDateTime()
