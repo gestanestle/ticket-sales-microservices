@@ -2,6 +2,7 @@ package com.krimo.email.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.krimo.email.dto.Event;
 import com.krimo.email.dto.TicketList;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,8 @@ public class EmailService {
 
 
         try{
+            objectMapper.registerModule(new JavaTimeModule());
+
             Event event = objectMapper.readValue(eventUpdates, Event.class);
 
             TicketList ticketList = webClient.get()
@@ -34,7 +37,7 @@ public class EmailService {
                                         .block();
 
             if (ticketList != null) {
-                ticketList.getTicketList().forEach(ticket -> emailFormatter.emailFormatter(ticket.getOwner(), event));
+                ticketList.getTicketList().forEach(ticket -> emailFormatter.emailFormatter(ticket.getCustomerEmail(), event));
             }
 
         } catch (JsonProcessingException e) {

@@ -1,5 +1,6 @@
 package com.krimo.email.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
@@ -17,6 +18,6 @@ public class Ticket {
     private String eventCode;
     private Section section;
     private LocalDateTime purchaseDateTime;
-    private String owner;
+    private String customerEmail;
 
 }

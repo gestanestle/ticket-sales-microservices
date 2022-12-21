@@ -74,6 +74,8 @@ public class EventService{
 
     public synchronized void addAttendee(String eventCode, Section section) {
 
+        List<Section> fullSections = new ArrayList<>();
+
         Event event = readEvent(eventCode);
 
         if(event == null) {
@@ -86,8 +88,12 @@ public class EventService{
 
         for (Section key: registeredAttendees.keySet()) {
             if (registeredAttendees.get(key) >= maxCapacity.get(key)) {
-                throw new ApiRequestException("Section is already full.");
+                fullSections.add(key);
             }
+        }
+
+        if (fullSections.contains(section)) {
+            throw new ApiRequestException("Section is already full.");
         }
 
         if (registeredAttendees.containsKey(section)) {
