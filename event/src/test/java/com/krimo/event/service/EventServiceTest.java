@@ -64,7 +64,6 @@ class EventServiceTest {
 
         eventCode = "d21d68f9-667c-42c0-8a0a-7bc01db1a45a";
         event.setEventCode(eventCode);
-
     }
 
     @AfterEach

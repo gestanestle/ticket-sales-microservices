@@ -11,6 +11,7 @@ import java.util.Collection;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Document(collection = "events")
 public class Event {
     @Id

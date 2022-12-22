@@ -5,9 +5,6 @@ spring:
 
   data:
     mongodb:
-#      authentication-database: admin
-#      username: root
-#      password: root
       database: ticket
       port: 27017
       host: localhost

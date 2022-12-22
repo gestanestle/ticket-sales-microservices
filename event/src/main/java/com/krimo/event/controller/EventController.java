@@ -1,8 +1,8 @@
 package com.krimo.event.controller;
 
 import com.krimo.event.data.Event;
+import com.krimo.event.data.Section;
 import com.krimo.event.dto.EventDTO;
-import com.krimo.event.dto.TicketDTO;
 import com.krimo.event.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -50,10 +50,10 @@ public class EventController {
         return new ResponseEntity<>(eventCode, HttpStatus.OK);
     }
 
-    @PutMapping(path = "{eventCode}/attendees")
+    @PutMapping(path = "{eventCode}/attendees/{section}")
     public ResponseEntity<Object> addAttendees(@PathVariable("eventCode") String eventCode,
-                                                               @RequestBody TicketDTO ticketDTO) {
-        eventService.addAttendee(eventCode, ticketDTO.getSection());
+                                               @PathVariable("section") Section section){
+        eventService.addAttendee(eventCode, section);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

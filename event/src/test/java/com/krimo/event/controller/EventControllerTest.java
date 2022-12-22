@@ -7,7 +7,6 @@ import com.krimo.event.data.Event;
 import com.krimo.event.data.Section;
 import com.krimo.event.data.TestEntityBuilder;
 import com.krimo.event.dto.EventDTO;
-import com.krimo.event.dto.TicketDTO;
 import com.krimo.event.service.EventService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -127,18 +126,9 @@ class EventControllerTest {
 
     @Test
     void addAttendees() throws Exception {
-        String ticketDtoJson = "";
-
-        try {
-            ticketDtoJson = objectMapper.writeValueAsString(new TicketDTO(eventCodeOne, Section.VIP));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
         mockMvc.perform(MockMvcRequestBuilders
-                        .put(String.format("http://localhost:9000/api/v1/event/%s/attendees", eventCodeOne))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ticketDtoJson))
+                        .put(String.format("http://localhost:9000/api/v1/event/%1$s/attendees/%2$s", eventCodeOne, Section.VIP))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(200));
     }
 }

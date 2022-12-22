@@ -1,7 +1,6 @@
 package com.krimo.event.data;
 
 import com.krimo.event.dto.EventDTO;
-import com.krimo.event.dto.TicketDTO;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

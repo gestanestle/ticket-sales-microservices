@@ -4,7 +4,6 @@ import com.krimo.ticket.client.EventClient;
 import com.krimo.ticket.data.Event;
 import com.krimo.ticket.dto.*;
 import com.krimo.ticket.data.Ticket;
-import com.krimo.ticket.exception.ApiRequestException;
 import com.krimo.ticket.repository.TicketRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +23,10 @@ public class TicketService {
 
     public synchronized ReturnObject buyTicket(CustomerDTO customerDTO) {
 
-        TicketDTO ticketDTO = new TicketDTO(customerDTO.getEventCode(),customerDTO.getSection());
-
         try {
-            eventClient.addAttendees(ticketDTO.getEventCode(), ticketDTO);
-        } catch (FeignException.BadRequest e) {
+            eventClient.addAttendees(customerDTO.getEventCode(), customerDTO.getSection());
+        }
+        catch (FeignException.BadRequest e) {
             return new ReturnObject(String.format("Section %s is already full.", customerDTO.getSection()));
         } catch (FeignException e) {
             return new ReturnObject("Sorry, we cannot process your request as of the moment. Please come back later.");
@@ -44,14 +42,11 @@ public class TicketService {
                 .customerEmail(customerDTO.getCustomerEmail())
                 .build();
 
-        Collection<Ticket> tickets = new ArrayList<>();
-
         Event event = ticketRepository.findByEventCode(customerDTO.getEventCode()).isPresent()
                 ? ticketRepository.findByEventCode(customerDTO.getEventCode()).get()
-                : new Event(customerDTO.getEventCode(), tickets);
+                : new Event(customerDTO.getEventCode(), Collections.emptyList());
 
-        event.setEventCode(event.getEventCode());
-        tickets = event.getTickets();
+        Collection<Ticket> tickets = new ArrayList<>(event.getTickets());
         tickets.add(ticket);
         event.setTickets(tickets);
         ticketRepository.save(event);
@@ -64,15 +59,9 @@ public class TicketService {
     }
 
     public TicketList eventTickets(String eventCode) {
-
-        TicketList ticketList = new TicketList();
-
-        try {
-            ticketList.setTicketList(ticketRepository.findByEventCode(eventCode).get().getTickets().stream().toList());
-        }catch (NoSuchElementException e) {
-            return null;
-        }
-        return ticketList;
+        return ticketRepository.findByEventCode(eventCode).isPresent()
+                ? new TicketList(ticketRepository.findByEventCode(eventCode).get().getTickets().stream().toList())
+                : null;
 
     }
 }
