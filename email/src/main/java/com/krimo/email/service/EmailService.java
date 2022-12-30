@@ -22,7 +22,7 @@ public class EmailService {
     @KafkaListener(topics = "event-updates", groupId = "groupId")
     public void sendEventUpdates(String eventUpdates) {
 
-        final String uri = "http://localhost:9000/api/v1/ticket/%s";
+        final String uri = "http://ticket:8082/api/v1/ticket/%s";
 
 
         try{

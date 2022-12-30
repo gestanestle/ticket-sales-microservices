@@ -1,4 +1,4 @@
-package com.krimo.event.config;|?
+package com.krimo.event.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;

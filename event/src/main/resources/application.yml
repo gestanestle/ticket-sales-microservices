@@ -21,7 +21,7 @@ spring:
   # Kafka producer properties
   kafka:
     producer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: kafka:29092
       key-serializer: ${serializer}
       value-serializer: ${serializer}
 
@@ -51,6 +51,8 @@ eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
 
 # API Docs
 springdoc:
