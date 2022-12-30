@@ -51,3 +51,8 @@ eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
+
+# API Docs
+springdoc:
+  api-docs:
+    path: /api/v1/event/api-docs
