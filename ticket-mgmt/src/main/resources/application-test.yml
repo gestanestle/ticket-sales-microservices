@@ -1,0 +1,12 @@
+# Spring Boot configuration
+spring:
+  application:
+    name: ticket-mgmt
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.hibernate: debug

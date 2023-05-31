@@ -1,0 +1,55 @@
+# Spring Boot configuration
+spring:
+  application:
+    name: ticket-mgmt
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+  # Database
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/ticket
+    username: postgres
+    password: postgres
+  # JPA properties
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    generate-ddl: true
+  # Redis
+  redis:
+    host: localhost
+    port: 6379
+
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.hibernate: debug
+
+# Server configuration
+server:
+  port: 8082
+  error:
+    include-binding-errors: always
+    include-message: always
+
+# Eureka
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    lease-renewal-interval-in-seconds: 10
+springdoc:
+  api-docs:
+    path: /api/v1/ticket/api-docs

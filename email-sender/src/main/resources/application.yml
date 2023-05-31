@@ -1,0 +1,44 @@
+# Spring Boot configuration
+spring:
+  application:
+    name: email-sender
+
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+
+  # Mailer
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: eurhainez@gmail.com
+    password: touqamftsvurcwaj
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org.hibernate: debug
+
+# Server configuration
+server:
+  port: 8083
+  error:
+    include-binding-errors: always
+    include-message: always
+
+# Eureka
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka

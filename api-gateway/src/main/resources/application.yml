@@ -15,26 +15,29 @@ spring:
           predicates:
           - Path=/eureka/**
 
-        - id: event
-          uri: lb://EVENT
+        - id: event-management
+          uri: lb://EVENT-MGMT
           predicates:
-          - Path=/api/v1/event/**
-        - id: ticket
-          uri: lb://TICKET
+          - Path=/api/v2/event/**
+
+        - id: ticket-management
+          uri: lb://TICKET-MGMT
           predicates:
-          - Path=/api/v1/ticket/**
-        - id: swagger-ui-event
-          uri: lb://EVENT/api/v1/event/swagger/ui
+          - Path=/api/v2/ticket/**
+
+        - id: swagger-ui-event-mgmt
+          uri: lb://EVENT-MGMT/api/v2/event/swagger/ui
           predicates:
             - Path=/swagger-ui/**,/swagger-resources/**,/swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
           filters:
-            - RewritePath=/api/v1/event/(?<path>.*), /$\{path}
-        - id: swagger-ui-ticket
-          uri: lb://TICKET/api/v1/ticket/swagger/ui
+            - RewritePath=/api/v2/event/(?<path>.*), /$\{path}
+
+        - id: swagger-ui-ticket-mgmt
+          uri: lb://TICKET-MGMT/api/v2/ticket/swagger/ui
           predicates:
             - Path=/swagger-ui/**,/swagger-resources/**, /swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
           filters:
-            - RewritePath=/api/v1/ticket/(?<path>.*), /$\{path}
+            - RewritePath=/api/v2/ticket/(?<path>.*), /$\{path}
 
 
 # Logger configuration
