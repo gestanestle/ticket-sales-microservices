@@ -80,6 +80,8 @@ class EventMgmtServiceImpl implements EventMgmtService {
     @Override
     public void updateEvent(String eventCode, EventDTO eventDTO) {
 
+        eventDTO.setEventCode(eventCode);
+
         Event event = readEvent(eventCode);
 
         if(event == null) {
@@ -87,17 +89,13 @@ class EventMgmtServiceImpl implements EventMgmtService {
         }
 
         Event updatedEvent = eventBuild(eventDTO);
-        updatedEvent.setEventCode(eventCode);
         updatedEvent.setId(event.getId());
         eventRepository.save(updatedEvent);
-
-        EventDTO eventUpdates = eventDTOBuild(updatedEvent);
-        eventUpdates.setEventCode(eventCode);
 
         String topic = "event.update";
         String message;
         try {
-            message = objectMapper.writeValueAsString(eventUpdates);
+            message = objectMapper.writeValueAsString(eventDTO);
         } catch (JsonProcessingException e) {
             throw new ApiRequestException("Unable to serialize message.");
         }
@@ -121,17 +119,6 @@ class EventMgmtServiceImpl implements EventMgmtService {
                 .details(eventDTO.getDetails())
                 .maxCapacity(eventDTO.getMaxCapacity())
                 .organizer(eventDTO.getOrganizer())
-                .build();
-    }
-
-    public EventDTO eventDTOBuild(Event event) {
-        return EventDTO.builder()
-                .venue(event.getVenue())
-                .dateTime(event.getDateTime())
-                .title(event.getTitle())
-                .details(event.getDetails())
-                .maxCapacity(event.getMaxCapacity())
-                .organizer(event.getOrganizer())
                 .build();
     }
 
