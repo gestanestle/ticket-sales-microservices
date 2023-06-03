@@ -35,7 +35,7 @@ class RedisServiceImpl implements RedisService {
         try {
             sectionAttendeeMap = objectMapper.readValue(val, SectionAttendeeMap.class);
         } catch (JsonProcessingException e) {
-            logger.debug("Failed to serialize hashmap to redis. \n"  + e.getCause());
+            logger.debug("Failed to deserialize from redis to HashMap. \n"  + e.getCause());
         }
         return sectionAttendeeMap;
     }
@@ -47,7 +47,7 @@ class RedisServiceImpl implements RedisService {
         try {
             serializedMap = objectMapper.writeValueAsString(sectionAttendeeMap);
         } catch (JsonProcessingException e) {
-            logger.debug("Failed to deserialize to hashmap from redis. \n" + e.getCause());
+            logger.debug("Failed to serialize hashmap to redis. \n" + e.getCause());
         }
         redisTemplate.opsForValue().set(cacheKey, serializedMap);
     }

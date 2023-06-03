@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TicketRepository extends JpaRepository<Ticket, String> {
+public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
-    @Query("SELECT t FROM Ticket t WHERE t.eventCode=?1")
-    List<Ticket> findByEventCode(String eventCode);
+    @Query("SELECT t.purchaserEmail from Ticket t WHERE t.eventCode=?1")
+    List<String> getEmails(String eventCode);
 }

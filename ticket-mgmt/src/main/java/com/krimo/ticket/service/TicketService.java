@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public interface TicketService {
@@ -43,8 +42,6 @@ class TicketServiceImpl implements TicketService {
 
     @Override
     public List<String> emailsList(String eventCode) {
-        List<String> emails = new ArrayList<>();
-        ticketRepository.findByEventCode(eventCode).forEach(ticket -> emails.add(ticket.getPurchaserEmail()));
-        return emails;
+        return ticketRepository.getEmails(eventCode).stream().toList();
     }
 }
