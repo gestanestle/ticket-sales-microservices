@@ -1,6 +1,5 @@
 package com.krimo.ticket.data;
 
-import com.krimo.ticket.dto.CustomerDTO;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

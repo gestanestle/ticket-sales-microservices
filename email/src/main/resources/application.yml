@@ -3,16 +3,9 @@ spring:
   application:
     name: email
 
-  # Kafka producer properties
+  # Kafka
   kafka:
-    producer:
-      bootstrap-servers: kafka:29092
-      key-serializer: ${serializer}
-      value-serializer: ${serializer}
-    consumer:
-      bootstrap-servers: kafka:29092
-      group-id: groupId
-      auto-offset-reset: earliest
+    bootstrap-servers: localhost:9092
 
   # Mailer
   mail:

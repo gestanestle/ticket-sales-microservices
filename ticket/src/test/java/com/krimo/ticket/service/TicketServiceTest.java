@@ -3,8 +3,6 @@ package com.krimo.ticket.service;
 import com.krimo.ticket.client.EventClient;
 import com.krimo.ticket.data.Event;
 import com.krimo.ticket.data.TestEntityBuilder;
-import com.krimo.ticket.data.Ticket;
-import com.krimo.ticket.dto.*;
 import com.krimo.ticket.repository.TicketRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

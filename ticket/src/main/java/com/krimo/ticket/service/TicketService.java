@@ -1,67 +1,55 @@
 package com.krimo.ticket.service;
 
-import com.krimo.ticket.client.EventClient;
-import com.krimo.ticket.data.Event;
-import com.krimo.ticket.dto.*;
 import com.krimo.ticket.data.Ticket;
 import com.krimo.ticket.repository.TicketRepository;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 
+public interface TicketService {
+    Ticket createTicket(Ticket ticket);
+    void saveTicket(Ticket ticket);
+    List<String> getEmailsList(String eventCode);
+}
 
 @Service
 @RequiredArgsConstructor
-public class TicketService {
-
+class TicketServiceImpl implements TicketService {
     private final TicketRepository ticketRepository;
-    private final EventClient eventClient;
 
-    public synchronized ReturnObject buyTicket(CustomerDTO customerDTO) {
+    private static final int CODE_LENGTH = 10;
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final SecureRandom secureRandom = new SecureRandom();
 
-        try {
-            eventClient.addAttendees(customerDTO.getEventCode(), customerDTO.getSection());
-        }
-        catch (FeignException.BadRequest e) {
-            return new ReturnObject(String.format("Section %s is already full.", customerDTO.getSection()));
-        } catch (FeignException e) {
-            return new ReturnObject("Sorry, we cannot process your request as of the moment. Please come back later.");
-        }
-
-        String ticketCode = UUID.randomUUID().toString();
-
-        Ticket ticket = Ticket.builder()
-                .ticketCode(ticketCode)
-                .eventCode(customerDTO.getEventCode())
-                .section(customerDTO.getSection())
-                .purchaseDateTime(LocalDateTime.now())
-                .customerEmail(customerDTO.getCustomerEmail())
-                .build();
-
-        Event event = ticketRepository.findByEventCode(customerDTO.getEventCode()).isPresent()
-                ? ticketRepository.findByEventCode(customerDTO.getEventCode()).get()
-                : new Event(customerDTO.getEventCode(), Collections.emptyList());
-
-        Collection<Ticket> tickets = new ArrayList<>(event.getTickets());
-        tickets.add(ticket);
-        event.setTickets(tickets);
-        ticketRepository.save(event);
-
-        return new ReturnObject(ticket);
+    @Override
+    public Ticket createTicket(Ticket ticket) {
+        // TODO: FOR TESTING PURPOSES ONLY.
+        saveTicket(ticket);
+        return ticket;
     }
 
-    public EventList allEvents () {
-        return new EventList(ticketRepository.findAll().stream().toList());
+    @Override
+    public void saveTicket(Ticket ticket) {
+        // serial code generator
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            stringBuilder.append(CHARACTERS.charAt(secureRandom.nextInt(CHARACTERS.length())));
+        }
+
+        String ticketCode = stringBuilder.toString();
+
+        ticket.setTicketCode(ticketCode);
+        ticket.setCreatedAt(LocalDateTime.now());
+
+        ticketRepository.saveTicket(ticket);
+
     }
 
-    public TicketList eventTickets(String eventCode) {
-        return ticketRepository.findByEventCode(eventCode).isPresent()
-                ? new TicketList(ticketRepository.findByEventCode(eventCode).get().getTickets().stream().toList())
-                : null;
-
+    @Override
+    public List<String> getEmailsList(String eventCode) {
+        return ticketRepository.getAllEmails(eventCode).stream().toList();
     }
 }

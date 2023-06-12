@@ -1,18 +1,21 @@
 package com.krimo.email.service;
 
-import com.krimo.email.bean.EmailSenderService;
 import com.krimo.email.dto.Event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+public interface EmailFormatter {
+    void formatMail(String ownerEmail, Event event);
+}
+
 @Service
 @RequiredArgsConstructor
-public class EmailFormatter {
+class EmailFormatterImpl implements EmailFormatter {
 
-    private final EmailSenderService emailSenderService;
+    private final Mailer mailer;
 
-
-    public void emailFormatter(String ownerEmail, Event event) {
+    @Override
+    public void formatMail(String purchaserEmail, Event event) {
 
         final String sub = "Event Updates";
 
@@ -27,8 +30,8 @@ public class EmailFormatter {
                         \s
                         """;
 
-        emailSenderService.sendMaiL(ownerEmail, sub, String.format(msg,
-                                            event.getTitle(),
+        mailer.sendMaiL(purchaserEmail, sub, String.format(msg,
+                                            event.getName(),
                                             event.getEventCode(),
                                             event.getDetails(),
                                             event.getVenue(),

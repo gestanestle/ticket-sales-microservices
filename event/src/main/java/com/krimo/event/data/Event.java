@@ -4,7 +4,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 
 @Getter
 @Setter
@@ -12,36 +11,39 @@ import java.util.HashMap;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "event")
+@Table(name = "event", indexes = @Index(name = "idx_event_code", columnList = "event_code"))
 public class Event {
 
     @Id
-    @SequenceGenerator(name = "eo_seq", sequenceName = "eo_seq", allocationSize = 1)
-    @GeneratedValue(generator = "eo_seq", strategy = GenerationType.AUTO)
+    @SequenceGenerator(name = "event_seq", sequenceName = "event_seq", allocationSize = 1)
+    @GeneratedValue(generator = "event_seq", strategy = GenerationType.AUTO)
     private Long id;
+    @Column(name = "event_code", unique = true, nullable = false, columnDefinition = "VARCHAR")
     private String eventCode;
+    @Column(name = "name", nullable = false)
+    private String name;
+    @Column(name = "venue", nullable = false)
     private String venue;
+    @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime;
-    private String title;
+
     private String details;
-    private HashMap<Section, Integer> maxCapacity;
-    private HashMap<Section, Integer> registeredAttendees;
     private String organizer;
+    private LocalDateTime createdAt;
 
     public Event(String eventCode,
-                 String venue, LocalDateTime dateTime,
-                 String title,
+                 String name,
+                 String venue,
+                 LocalDateTime dateTime,
                  String details,
-                 HashMap<Section, Integer> maxCapacity,
-                 HashMap<Section, Integer> registeredAttendees,
-                 String organizer) {
+                 String organizer,
+                 LocalDateTime createdAt) {
         this.eventCode = eventCode;
+        this.name = name;
         this.venue = venue;
         this.dateTime = dateTime;
-        this.title = title;
         this.details = details;
-        this.maxCapacity = maxCapacity;
-        this.registeredAttendees = registeredAttendees;
         this.organizer = organizer;
+        this.createdAt = createdAt;
     }
 }

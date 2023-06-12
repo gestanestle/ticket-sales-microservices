@@ -4,7 +4,6 @@ import com.krimo.ticket.TicketApplication;
 import com.krimo.ticket.config.MongoContainerEnv;
 import com.krimo.ticket.data.Event;
 import com.krimo.ticket.data.TestEntityBuilder;
-import com.krimo.ticket.data.Ticket;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

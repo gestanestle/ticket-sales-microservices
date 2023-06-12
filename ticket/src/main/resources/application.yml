@@ -2,12 +2,23 @@
 spring:
   application:
     name: ticket
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ticket_db
+    username: postgres
+    password: postgres
+  # JPA properties
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    generate-ddl: true
 
-  data:
-    mongodb:
-      database: ticket
-      port: 27017
-      host: localhost
 
 # Logger configuration
 logging:

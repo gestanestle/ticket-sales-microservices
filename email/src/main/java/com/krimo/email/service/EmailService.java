@@ -2,47 +2,50 @@ package com.krimo.email.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.krimo.email.dto.Event;
-import com.krimo.email.dto.TicketList;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.errors.ApiException;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+
+public interface EmailService {
+    void sendEventUpdates(String eventUpdates);
+}
 @Service
 @RequiredArgsConstructor
-public class EmailService {
+class EmailServiceImpl implements EmailService {
 
     private final EmailFormatter emailFormatter;
 
     private final ObjectMapper objectMapper;
     private final WebClient webClient;
 
-    @KafkaListener(topics = "event-updates", groupId = "groupId")
-    public void sendEventUpdates(String eventUpdates) {
+    @KafkaListener(topics = "event-updates", groupId = "event-updates-consumer-group")
+    @Override public void sendEventUpdates(String eventUpdates) {
 
-        final String uri = "http://ticket:8082/api/v1/ticket/%s";
-
-
-        try{
-            objectMapper.registerModule(new JavaTimeModule());
-
-            Event event = objectMapper.readValue(eventUpdates, Event.class);
-
-            TicketList ticketList = webClient.get()
-                                        .uri(String.format(uri, event.getEventCode()))
-                                        .retrieve()
-                                        .bodyToMono(TicketList.class)
-                                        .block();
-
-            if (ticketList != null) {
-                ticketList.getTicketList().forEach(ticket -> emailFormatter.emailFormatter(ticket.getCustomerEmail(), event));
-            }
-
+        // TODO: Change hostname to ticket
+        final String uri = "http://localhost:8082/api/v2/ticket/emails/%s";
+        Event event;
+        try {
+            event = objectMapper.readValue(eventUpdates, Event.class);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new ApiException("Failed to deserialize event-updates message.");
         }
 
+        ParameterizedTypeReference<List<String>> responseType = new ParameterizedTypeReference<>() {};
+        List<String> emailsList = webClient.get()
+                .uri(String.format(uri, event.getEventCode()))
+                .retrieve()
+                .bodyToMono(responseType)
+                .block();
+
+
+        if (emailsList != null) {
+            emailsList.forEach(email -> emailFormatter.formatMail(email, event));
+        }
     }
 }

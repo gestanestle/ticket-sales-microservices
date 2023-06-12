@@ -11,7 +11,7 @@ public class TestEntityBuilder {
 
     private final static String VENUE = "Mall of Asia";
     private final static LocalDateTime LOCAL_DATE_TIME = LocalDateTime.parse("2022-02-02T19:30:00");
-    private final static String TITLE = "The Eras Tour";
+    private final static String NAME = "The Eras Tour";
     private final static String DETAILS = "The Taylor Swift world tour concert after Midnights.";
     private final static String ORGANIZER = "Krimo";
     private final static String NEW_ORGANIZER = "Nestle";
@@ -21,8 +21,9 @@ public class TestEntityBuilder {
     public Event event() {
         map();
         return Event.builder()
-                .venue(VENUE).dateTime(LOCAL_DATE_TIME).title(TITLE).details(DETAILS)
-                .maxCapacity(maxCapacity).organizer(ORGANIZER)
+                .name(NAME).venue(VENUE).dateTime(LOCAL_DATE_TIME)
+                .details(DETAILS).organizer(ORGANIZER)
+                .createdAt(LOCAL_DATE_TIME)
                 .build();
     }
 

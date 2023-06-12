@@ -5,11 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.krimo.ticket.data.Event;
 import com.krimo.ticket.data.TestEntityBuilder;
-import com.krimo.ticket.data.Ticket;
-import com.krimo.ticket.dto.CustomerDTO;
-import com.krimo.ticket.dto.EventList;
-import com.krimo.ticket.dto.ReturnObject;
-import com.krimo.ticket.dto.TicketList;
 import com.krimo.ticket.service.TicketService;
 
 import org.junit.jupiter.api.AfterEach;

@@ -3,33 +3,40 @@ spring:
   application:
     name: event
 
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration
+
   # Database
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/event
+    url: jdbc:postgresql://localhost:5432/event_db
     username: postgres
     password: postgres
+
   # JPA properties
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     show-sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
     generate-ddl: true
-  # Kafka producer properties
+
+  # Cassandra
+  data:
+    cassandra:
+      schema-action: create_if_not_exists
+      keyspace-name: event_capacity_ks
+      contact-points: cassandra
+      port: 29042
+      local-datacenter: datacenter1
+
+  #      script: classpath:db/migration/schema.cql
+
+  # Kafka properties
   kafka:
-    producer:
-      bootstrap-servers: kafka:29092
-      key-serializer: ${serializer}
-      value-serializer: ${serializer}
-
-serializer: org.apache.kafka.common.serialization.StringSerializer
-
-event:
-  topic:
-    name: event-updates
+    bootstrap-servers: kafka:29092
 
 # Logger configuration
 logging:
