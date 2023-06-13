@@ -18,13 +18,13 @@ public class Event {
     @SequenceGenerator(name = "event_seq", sequenceName = "event_seq", allocationSize = 1)
     @GeneratedValue(generator = "event_seq", strategy = GenerationType.AUTO)
     private Long id;
-    @Column(name = "event_code", unique = true, nullable = false, columnDefinition = "VARCHAR")
+    @Column(name = "event_code")
     private String eventCode;
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
-    @Column(name = "venue", nullable = false)
+    @Column(name = "venue")
     private String venue;
-    @Column(name = "date_time", nullable = false)
+    @Column(name = "date_time")
     private LocalDateTime dateTime;
 
     private String details;

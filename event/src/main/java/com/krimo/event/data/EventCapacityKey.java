@@ -18,10 +18,10 @@ import java.io.Serializable;
 @PrimaryKeyClass
 public class EventCapacityKey implements Serializable {
 
-    @PrimaryKeyColumn(name = "seat", type = PrimaryKeyType.PARTITIONED)
+    @PrimaryKeyColumn(name = "event_code", type = PrimaryKeyType.PARTITIONED)
+    private String eventCode;
+    @PrimaryKeyColumn(name = "seat", type = PrimaryKeyType.CLUSTERED)
     private String section;
 
-    @PrimaryKeyColumn(name = "event_code", type = PrimaryKeyType.CLUSTERED)
-    private String eventCode;
 
 }

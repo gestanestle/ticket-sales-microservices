@@ -3,8 +3,8 @@ spring:
   application:
     name: event
 
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration
+#  autoconfigure:
+#    exclude: org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration
 
   # Database
   datasource:
@@ -24,19 +24,25 @@ spring:
     generate-ddl: true
 
   # Cassandra
+#  flyway:
+#    enabled: true
+#    locations: classpath:cassandra/migration
+
   data:
     cassandra:
       schema-action: create_if_not_exists
-      keyspace-name: event_capacity_ks
-      contact-points: cassandra
-      port: 29042
+      keyspace-name: ec_ks
+      contact-points: 127.0.0.1
       local-datacenter: datacenter1
+      port: 9042
+      ssl: false
+      connection:
+        connect-timeout: 5s
 
-  #      script: classpath:db/migration/schema.cql
 
   # Kafka properties
   kafka:
-    bootstrap-servers: kafka:29092
+    bootstrap-servers: localhost:9092
 
 # Logger configuration
 logging:
@@ -64,4 +70,4 @@ eureka:
 # API Docs
 springdoc:
   api-docs:
-    path: /api/v1/event/api-docs
+    path: /api/v2/event/api-docs

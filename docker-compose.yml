@@ -65,25 +65,48 @@ services:
 #    depends_on:
 #      - kafka
 
+#  cassandra:
+#    image: cassandra:latest
+#    restart: always
+#    ports:
+#      - "9042:9042"
+#    healthcheck:
+#      test: [ "CMD", "cqlsh", "-e", "SELECT * FROM system.local;" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 3
+#    volumes:
+#      - ./cassandra-scripts:/scripts
+#    command:
+#      - /bin/bash -c "sleep 20 && cqlsh cassandra -R -f /scripts/create_keyspace.cql && sleep 10 && cqlsh cassandra -R -f /scripts/create_table.cql"
+
   cassandra:
     image: cassandra:latest
-    restart: always
+    container_name: cassandra
     ports:
-      - "29042:29042"
+      - "9042:9042"
+    environment:
+      - "MAX_HEAP_SIZE=256M"
+      - "HEAP_NEWSIZE=128M"
+    restart: always
     healthcheck:
-      test: [ "CMD", "cqlsh", "-e", "SELECT * FROM system.local;" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test: ["CMD", "cqlsh", "-u cassandra", "-p cassandra" ,"-e describe keyspaces"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  cassandra-load-keyspace:
+    container_name: cassandra-load-keyspace
+    image: cassandra:latest
+    depends_on:
+      cassandra:
+        condition: service_healthy
     volumes:
-      - ./cassandra-scripts:/scripts
-    entrypoint:
-      - sh
-      - -c
-      - |
-        /bin/bash -c "sleep 20 && cqlsh -f /scripts/create_keyspace.cql && sleep 10 && cqlsh -f /scripts/create_table.cql; cassandra -R -f"
+      - ./cassandra-scripts/schema.cql:/schema.cql
+    command: /bin/bash -c "echo loading cassandra keyspace && cqlsh cassandra -f /schema.cql"
 
   event_db:
+    container_name: event_db
     image: postgres:latest
     restart: always
     ports:
@@ -94,6 +117,7 @@ services:
       - POSTGRES_DB=event_db
 
   ticket_db:
+    container_name: ticket_db
     image: postgres:latest
     restart: always
     ports:
@@ -104,12 +128,16 @@ services:
       - POSTGRES_DB=ticket_db
 
   zookeeper:
+    container_name: zookeeper
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    restart: always
 
   kafka:
+    restart: always
+    container_name: kafka
     image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper

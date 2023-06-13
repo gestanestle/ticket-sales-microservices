@@ -13,6 +13,8 @@ import java.util.HashMap;
 @NoArgsConstructor
 public class EventDTO {
 
+    @JsonProperty("event_code")
+    private String eventCode;
     private String name;
     private String venue;
     @JsonProperty("date_time")
@@ -39,11 +41,12 @@ public class EventDTO {
     }
 
     // Response DTO
-    public EventDTO(String name, String venue,
+    public EventDTO(String eventCode, String name, String venue,
                     LocalDateTime dateTime, String details,
                     HashMap<Section, Integer> maxCapacity,
                     HashMap<Section, Integer> attendeeCount,
                     String organizer, LocalDateTime createdAt) {
+        this.eventCode = eventCode;
         this.name = name;
         this.venue = venue;
         this.dateTime = dateTime;
