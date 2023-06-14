@@ -6,9 +6,10 @@ spring:
     enabled: true
     locations: classpath:db/migration
   datasource:
-    url: jdbc:postgresql://localhost:5432/ticket_db
+    url: jdbc:postgresql://localhost:5433/ticket_db
     username: postgres
     password: postgres
+
   # JPA properties
   jpa:
     hibernate:
@@ -18,6 +19,18 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
     generate-ddl: true
+
+  # Cassandra
+  data:
+    cassandra:
+      schema-action: none
+      keyspace-name: ec_ks
+      contact-points: 127.0.0.1
+      local-datacenter: datacenter1
+      port: 9042
+      ssl: false
+      connection:
+        connect-timeout: 5s
 
 
 # Logger configuration
@@ -46,4 +59,4 @@ eureka:
 # API Docs
 springdoc:
   api-docs:
-    path: /api/v1/ticket/api-docs
+    path: /api/v2/ticket/api-docs

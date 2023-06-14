@@ -9,7 +9,7 @@ spring:
   # Database
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/event_db
+    url: jdbc:postgresql://localhost:5431/event_db
     username: postgres
     password: postgres
 
@@ -24,10 +24,6 @@ spring:
     generate-ddl: true
 
   # Cassandra
-#  flyway:
-#    enabled: true
-#    locations: classpath:cassandra/migration
-
   data:
     cassandra:
       schema-action: create_if_not_exists

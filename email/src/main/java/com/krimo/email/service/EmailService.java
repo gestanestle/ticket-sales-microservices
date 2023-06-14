@@ -10,7 +10,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.List;
+import java.util.Set;
 
 public interface EmailService {
     void sendEventUpdates(String eventUpdates);
@@ -20,7 +20,6 @@ public interface EmailService {
 class EmailServiceImpl implements EmailService {
 
     private final EmailFormatter emailFormatter;
-
     private final ObjectMapper objectMapper;
     private final WebClient webClient;
 
@@ -28,7 +27,7 @@ class EmailServiceImpl implements EmailService {
     @Override public void sendEventUpdates(String eventUpdates) {
 
         // TODO: Change hostname to ticket
-        final String uri = "http://localhost:8082/api/v2/ticket/emails/%s";
+        final String uri = "http://localhost:8082/api/v2/ticket/%s/emails";
         Event event;
         try {
             event = objectMapper.readValue(eventUpdates, Event.class);
@@ -36,8 +35,8 @@ class EmailServiceImpl implements EmailService {
             throw new ApiException("Failed to deserialize event-updates message.");
         }
 
-        ParameterizedTypeReference<List<String>> responseType = new ParameterizedTypeReference<>() {};
-        List<String> emailsList = webClient.get()
+        ParameterizedTypeReference<Set<String>> responseType = new ParameterizedTypeReference<>() {};
+        Set<String> emailsList = webClient.get()
                 .uri(String.format(uri, event.getEventCode()))
                 .retrieve()
                 .bodyToMono(responseType)

@@ -20,8 +20,6 @@ spring:
           starttls:
             enable: true
 
-serializer: org.apache.kafka.common.serialization.StringSerializer
-
 # Logger configuration
 logging:
   pattern:

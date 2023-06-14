@@ -109,10 +109,6 @@ class EventServiceImpl implements EventService{
         if (eventDTO.getDetails() != null) { event.setDetails(eventDTO.getDetails()); }
         if (eventDTO.getDateTime() != null) { event.setDateTime(eventDTO.getDateTime()); }
 
-//        Event updatedEvent = eventBuild(eventDTO);
-//        updatedEvent.setId(existingEvent.getId());
-//        updatedEvent.setEventCode(eventCode);
-
         eventRepository.save(event);
 
         try {
@@ -131,7 +127,7 @@ class EventServiceImpl implements EventService{
     }
 
     // Fetch event capacity from cassandra
-    public HashMap<Section, Integer> fetchMaxCapacity(String eventCode) {
+    private HashMap<Section, Integer> fetchMaxCapacity(String eventCode) {
         HashMap<Section, Integer> maxCapacityMap = new HashMap<>();
 
         for (EventCapacity eventCapacity: eventCapacityRepository.findByEventCode(eventCode)) {
@@ -143,7 +139,7 @@ class EventServiceImpl implements EventService{
         return maxCapacityMap;
     }
 
-    public HashMap<Section, Integer> fetchAttendeeCount(String eventCode) {
+    private HashMap<Section, Integer> fetchAttendeeCount(String eventCode) {
         HashMap<Section, Integer> getAttendeeMap = new HashMap<>();
 
         for (EventCapacity eventCapacity: eventCapacityRepository.findByEventCode(eventCode)) {
@@ -156,7 +152,7 @@ class EventServiceImpl implements EventService{
     }
 
     // Reusable method - entity mapping
-    public Event eventBuild(EventDTO eventDTO) {
+    private Event eventBuild(EventDTO eventDTO) {
         return Event.builder()
                 .name(eventDTO.getName())
                 .venue(eventDTO.getVenue())
@@ -167,7 +163,7 @@ class EventServiceImpl implements EventService{
                 .build();
     }
 
-    public EventDTO eventDTOBuild(Event event) {
+    private EventDTO eventDTOBuild(Event event) {
         return EventDTO.builder()
                 .eventCode(event.getEventCode())
                 .name(event.getName())
