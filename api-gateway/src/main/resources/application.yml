@@ -18,23 +18,23 @@ spring:
         - id: event
           uri: lb://EVENT
           predicates:
-          - Path=/api/v1/event/**
+          - Path=/api/v2/events/**
         - id: ticket
           uri: lb://TICKET
           predicates:
-          - Path=/api/v1/ticket/**
+          - Path=/api/v2/ticket/**
         - id: swagger-ui-event
-          uri: lb://EVENT/api/v1/event/swagger/ui
+          uri: lb://EVENT/api/v2/events/swagger/ui
           predicates:
             - Path=/swagger-ui/**,/swagger-resources/**,/swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
           filters:
-            - RewritePath=/api/v1/event/(?<path>.*), /$\{path}
+            - RewritePath=/api/v2/events/(?<path>.*), /$\{path}
         - id: swagger-ui-ticket
-          uri: lb://TICKET/api/v1/ticket/swagger/ui
+          uri: lb://TICKET/api/v2/ticket/swagger/ui
           predicates:
             - Path=/swagger-ui/**,/swagger-resources/**, /swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
           filters:
-            - RewritePath=/api/v1/ticket/(?<path>.*), /$\{path}
+            - RewritePath=/api/v2/ticket/(?<path>.*), /$\{path}
 
 
 # Logger configuration

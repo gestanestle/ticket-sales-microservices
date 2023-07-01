@@ -1,7 +1,5 @@
 package com.krimo.event.controller;
 
-import com.krimo.event.data.Event;
-import com.krimo.event.data.Section;
 import com.krimo.event.dto.EventDTO;
 import com.krimo.event.service.EventService;
 import lombok.RequiredArgsConstructor;
@@ -12,48 +10,32 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/event")
+@RequestMapping("api/v2/events")
 @RequiredArgsConstructor
 public class EventController {
 
     private final EventService eventService;
 
-    @PostMapping()
-    public ResponseEntity<String> createEvent(@RequestBody EventDTO eventDTO) {
-        String eventCode = eventService.createEvent(eventDTO);
-        return new ResponseEntity<>(eventCode, HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<Long> createEvent(@RequestBody EventDTO eventDTO) {
+        Long eventId = eventService.createEvent(eventDTO);
+        return new ResponseEntity<>(eventId, HttpStatus.CREATED);
     }
 
-    @GetMapping(path = "{eventCode}")
-    public ResponseEntity<Event> readEvent(@PathVariable("eventCode") String eventCode) {
-        Event event = eventService.readEvent(eventCode);
-        return new ResponseEntity<>(event, HttpStatus.OK);
-
+    @GetMapping
+    public ResponseEntity<List<EventDTO>> getAllEvents() {
+        return new ResponseEntity<>(eventService.getAllEvents(), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/all")
-    public ResponseEntity<List<Event>> readAllEvents() {
-        List<Event> events = eventService.readAllEvents();
-        return new ResponseEntity<>(events, HttpStatus.OK);
+    @GetMapping(path = "{eventId}")
+    public ResponseEntity<EventDTO> getEvent(@PathVariable("eventId") Long eventId) {
+        return new ResponseEntity<>(eventService.getEvent(eventId), HttpStatus.OK);
     }
 
-    @PutMapping(path = "{eventCode}")
-    public ResponseEntity<String> updateEvent(@PathVariable("eventCode") String eventCode,
+    @PutMapping(path = "{eventId}")
+    public ResponseEntity<Object> updateEvent(@PathVariable("eventId") Long eventId,
                                               @RequestBody EventDTO eventDTO) {
-        eventService.updateEvent(eventCode, eventDTO);
-        return new ResponseEntity<>(eventCode, HttpStatus.OK);
-    }
-
-    @DeleteMapping(path = "{eventCode}")
-    public ResponseEntity<String> deleteEvent(@PathVariable("eventCode") String eventCode) {
-        eventService.deleteEvent(eventCode);
-        return new ResponseEntity<>(eventCode, HttpStatus.OK);
-    }
-
-    @PutMapping(path = "{eventCode}/attendees/{section}")
-    public ResponseEntity<Object> addAttendees(@PathVariable("eventCode") String eventCode,
-                                               @PathVariable("section") Section section){
-        eventService.addAttendee(eventCode, section);
+        eventService.updateEvent(eventId, eventDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
