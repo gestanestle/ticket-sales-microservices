@@ -24,13 +24,13 @@ public class Event {
     @Column(name = "date_time")
     private LocalDateTime dateTime;
     @Column(name = "created_by")
-    private String createdBy;
+    private Long createdBy;
     @Column(name = "created_At")
     private LocalDateTime createdAt;
     @Column(name = "is_canceled")
     private Boolean isCanceled;
 
-    public Event(String name, String description, String venue, LocalDateTime dateTime, String createdBy, LocalDateTime createdAt, Boolean isCanceled) {
+    public Event(String name, String description, String venue, LocalDateTime dateTime, Long createdBy, LocalDateTime createdAt, Boolean isCanceled) {
         this.name = name;
         this.description = description;
         this.venue = venue;
@@ -41,7 +41,7 @@ public class Event {
     }
 
     public static Event create(String name, String description, String venue,
-                                    LocalDateTime dateTime, String createdBy) {
+                                    LocalDateTime dateTime, Long createdBy) {
         return new Event(name, description, venue, dateTime, createdBy,
                         LocalDateTime.now(), false);
     }

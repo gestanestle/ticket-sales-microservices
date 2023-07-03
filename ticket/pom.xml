@@ -80,6 +80,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.7.5</version>
                 <configuration>
                     <mainClass>com.krimo.ticket.TicketApplication</mainClass>
                     <excludes>

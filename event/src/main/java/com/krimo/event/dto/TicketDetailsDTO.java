@@ -18,6 +18,6 @@ public class TicketDetailsDTO {
     private Integer price;
     @JsonProperty("total_stock")
     private Integer totalStock;
-    @JsonProperty("remaining_stock")
-    private Integer remainingStock;
+    @JsonProperty("total_sold")
+    private Integer totalSold;
 }

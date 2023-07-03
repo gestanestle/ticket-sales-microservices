@@ -16,8 +16,8 @@ public class TicketDetails {
     private Integer price;
     @Column(name = "total_stock")
     private Integer totalStock;
-    @Column(name = "remaining_stock", updatable = false)
-    private Integer remainingStock;
+    @Column(name = "total_sold", updatable = false)
+    private Integer totalSold;
 
     public TicketDetails(TicketDetailsPK pk, Integer price, Integer totalStock) {
         this.pk = pk;

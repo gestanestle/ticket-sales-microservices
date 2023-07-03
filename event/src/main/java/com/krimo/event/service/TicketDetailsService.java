@@ -5,6 +5,7 @@ import com.krimo.event.data.Section;
 import com.krimo.event.data.TicketDetails;
 import com.krimo.event.data.TicketDetailsPK;
 import com.krimo.event.dto.TicketDetailsDTO;
+import com.krimo.event.exception.ApiRequestException;
 import com.krimo.event.repository.EventRepository;
 import com.krimo.event.repository.TicketDetailsRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,6 @@ public interface TicketDetailsService {
 
     void updateTicketDetails(Long eventId, String section, TicketDetailsDTO ticketDetailsDTO);
 
-    void deleteTicketDetails(Long eventId, String section);
 }
 
 @Service
@@ -58,16 +58,16 @@ class TicketDetailsServiceImpl implements TicketDetailsService {
 
         TicketDetails ticketDetails = ticketDetailsRepository.getReferenceById(pk(event(eventId), Section.valueOf(section.toUpperCase())));
 
+        if (ticketDetails.getTotalSold() != null) {
+            throw new ApiRequestException("Invalid request. Tickets have already been sold.");
+        }
+
         if (ticketDetailsDTO.getPrice() != null) { ticketDetails.setPrice(ticketDetailsDTO.getPrice()); }
         if (ticketDetailsDTO.getTotalStock() != null) { ticketDetails.setTotalStock(ticketDetailsDTO.getTotalStock()); }
 
         ticketDetailsRepository.save(ticketDetails);
     }
 
-    @Override
-    public void deleteTicketDetails(Long eventId, String section) {
-        ticketDetailsRepository.deleteById(pk(event(eventId), Section.valueOf(section.toUpperCase())));
-    }
 
     private Event event(Long id) { return eventRepository.getReferenceById(id); }
 
@@ -82,7 +82,7 @@ class TicketDetailsServiceImpl implements TicketDetailsService {
                 .section(ticketDetails.getPk().getSection())
                 .price(ticketDetails.getPrice())
                 .totalStock(ticketDetails.getTotalStock())
-                .remainingStock(ticketDetails.getRemainingStock())
+                .totalSold(ticketDetails.getTotalSold())
                 .build();
     }
 }

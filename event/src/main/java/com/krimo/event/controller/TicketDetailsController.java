@@ -17,7 +17,6 @@ public class TicketDetailsController {
 
     private final TicketDetailsService ticketDetailsService;
 
-
     @PostMapping(path = "{eventId}/ticket-details")
     public ResponseEntity<Object> setTicketDetails(@PathVariable("eventId") Long eventId,
                                                    @RequestBody TicketDetailsDTO ticketDetailsDTO) {
@@ -38,11 +37,5 @@ public class TicketDetailsController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping(path = "{eventId}/ticket-details/{section}")
-    public ResponseEntity<Object> deleteTicketDetails(@PathVariable("eventId") Long eventId,
-                                                      @PathVariable("section") String section) {
-        ticketDetailsService.deleteTicketDetails(eventId, section);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 
 }

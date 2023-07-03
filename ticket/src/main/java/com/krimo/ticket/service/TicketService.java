@@ -1,67 +1,92 @@
 package com.krimo.ticket.service;
 
-import com.krimo.ticket.client.EventClient;
-import com.krimo.ticket.data.Event;
-import com.krimo.ticket.dto.*;
+import com.krimo.ticket.dao.TicketDetailsDAO;
 import com.krimo.ticket.data.Ticket;
+import com.krimo.ticket.dto.TicketDTO;
+import com.krimo.ticket.exception.ApiRequestException;
 import com.krimo.ticket.repository.TicketRepository;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.security.SecureRandom;
 
+public interface TicketService {
+
+    Long purchaseTicket(TicketDTO ticketDTO);
+    TicketDTO viewTicket(Long id);
+    void cancelPurchase(Long id);
+}
 
 @Service
 @RequiredArgsConstructor
-public class TicketService {
+@Transactional
+class TicketServiceImpl implements TicketService {
 
     private final TicketRepository ticketRepository;
-    private final EventClient eventClient;
+    private final TicketDetailsDAO ticketDetailsDAO;
 
-    public synchronized ReturnObject buyTicket(CustomerDTO customerDTO) {
+    private static final int CODE_LENGTH = 10;
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final SecureRandom secureRandom = new SecureRandom();
 
-        try {
-            eventClient.addAttendees(customerDTO.getEventCode(), customerDTO.getSection());
+    @Override
+    public Long purchaseTicket(TicketDTO ticketDTO) {
+
+        Long eventId = ticketDTO.getEventId();
+        String section = ticketDTO.getSection().name();
+
+        if (ticketDetailsDAO.isSoldOut(eventId, section)) { throw new ApiRequestException("Sold out."); }
+        ticketDetailsDAO.incrementTotalSold(eventId, section);
+        return createTicket(ticketDTO);
+    }
+
+    @Override
+    public TicketDTO viewTicket(Long id) {
+
+        Ticket ticket = getTicket(id);
+        return mapToTicketDTO(ticket);
+    }
+
+    @Override
+    public void cancelPurchase(Long id) {
+
+        Long eventId = getTicket(id).getEventId();
+        String section = getTicket(id).getSection().name();
+
+        ticketRepository.deleteById(id);
+        ticketDetailsDAO.decrementTotalSold(eventId, section);
+    }
+
+    private Long createTicket(TicketDTO ticketDTO) {
+        
+        // serial code generator
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            stringBuilder.append(CHARACTERS.charAt(secureRandom.nextInt(CHARACTERS.length())));
         }
-        catch (FeignException.BadRequest e) {
-            return new ReturnObject(String.format("Section %s is already full.", customerDTO.getSection()));
-        } catch (FeignException e) {
-            return new ReturnObject("Sorry, we cannot process your request as of the moment. Please come back later.");
-        }
 
-        String ticketCode = UUID.randomUUID().toString();
+        String ticketCode = stringBuilder.toString();
+        
+        Ticket ticket = Ticket.create(
+                ticketDTO.getEventId(),
+                ticketDTO.getSection(),
+                ticketCode,
+                ticketDTO.getPurchasedBy()
+        );
+        return ticketRepository.saveAndFlush(ticket).getId();
+    }
 
-        Ticket ticket = Ticket.builder()
-                .ticketCode(ticketCode)
-                .eventCode(customerDTO.getEventCode())
-                .section(customerDTO.getSection())
-                .purchaseDateTime(LocalDateTime.now())
-                .customerEmail(customerDTO.getCustomerEmail())
+    private Ticket getTicket(Long id) { return ticketRepository.findById(id).orElseThrow(); }
+
+    private TicketDTO mapToTicketDTO(Ticket ticket) {
+        return TicketDTO.builder()
+                .id(ticket.getId())
+                .eventId(ticket.getEventId())
+                .section(ticket.getSection())
+                .ticketCode(ticket.getTicketCode())
+                .purchasedBy(ticket.getPurchasedBy())
+                .purchasedAt(ticket.getPurchasedAt())
                 .build();
-
-        Event event = ticketRepository.findByEventCode(customerDTO.getEventCode()).isPresent()
-                ? ticketRepository.findByEventCode(customerDTO.getEventCode()).get()
-                : new Event(customerDTO.getEventCode(), Collections.emptyList());
-
-        Collection<Ticket> tickets = new ArrayList<>(event.getTickets());
-        tickets.add(ticket);
-        event.setTickets(tickets);
-        ticketRepository.save(event);
-
-        return new ReturnObject(ticket);
-    }
-
-    public EventList allEvents () {
-        return new EventList(ticketRepository.findAll().stream().toList());
-    }
-
-    public TicketList eventTickets(String eventCode) {
-        return ticketRepository.findByEventCode(eventCode).isPresent()
-                ? new TicketList(ticketRepository.findByEventCode(eventCode).get().getTickets().stream().toList())
-                : null;
-
     }
 }

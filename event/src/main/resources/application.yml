@@ -7,7 +7,7 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    baseline-on-migrate: true
+#    baseline-on-migrate: true
     fail-on-missing-locations: true
 
   # Database

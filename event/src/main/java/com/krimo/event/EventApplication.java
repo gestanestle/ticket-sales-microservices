@@ -8,7 +8,7 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 @EnableEurekaClient
 @SpringBootApplication
-@OpenAPIDefinition(info = @Info(title = "Event API", version = "1.0"))
+@OpenAPIDefinition(info = @Info(title = "Event API", version = "2.0"))
 public class EventApplication {
 
     public static void main(String[] args) {

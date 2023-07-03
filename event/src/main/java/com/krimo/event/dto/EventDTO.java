@@ -19,7 +19,7 @@ public class EventDTO {
     @JsonProperty("date_time")
     private LocalDateTime dateTime;
     @JsonProperty("created_by")
-    private String createdBy;
+    private Long createdBy;
     @JsonProperty("created_At")
     private LocalDateTime createdAt;
     @JsonProperty("is_canceled")

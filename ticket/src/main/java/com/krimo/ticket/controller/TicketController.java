@@ -1,6 +1,6 @@
 package com.krimo.ticket.controller;
 
-import com.krimo.ticket.dto.*;
+import com.krimo.ticket.dto.TicketDTO;
 import com.krimo.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -9,32 +9,25 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("api/v1/ticket")
+@RequestMapping("api/v2/tickets")
 @RequiredArgsConstructor
 public class TicketController {
 
     private final TicketService ticketService;
 
-    @PostMapping()
-    public ResponseEntity<Object> buyTicket(@RequestBody CustomerDTO customerDTO) {
-        ReturnObject returnObject = ticketService.buyTicket(customerDTO);
-
-        if (returnObject.getTicket() == null) {
-            return new ResponseEntity<>(returnObject.getErrorMsg(), HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity<>(returnObject.getTicket(), HttpStatus.OK);
-
+    @PostMapping
+    public ResponseEntity<Long> purchaseTicket(@RequestBody TicketDTO ticketDTO) {
+        return new ResponseEntity<>(ticketService.purchaseTicket(ticketDTO), HttpStatus.CREATED);
     }
 
-    @GetMapping(path = "/all")
-    public ResponseEntity<EventList> allEvents() {
-        return new ResponseEntity<>(ticketService.allEvents(), HttpStatus.OK);
+    @GetMapping(path = "{ticketId}")
+    public ResponseEntity<TicketDTO> viewTicket(@PathVariable("ticketId") Long ticketId) {
+        return new ResponseEntity<>(ticketService.viewTicket(ticketId), HttpStatus.OK);
     }
 
-    @GetMapping(path = "{eventCode}")
-    public ResponseEntity<TicketList> eventTickets(@PathVariable("eventCode") String eventCode) {
-        return new ResponseEntity<>(ticketService.eventTickets(eventCode), HttpStatus.OK);
+    @DeleteMapping(path = "{ticketId}")
+    public ResponseEntity<Object> cancelPurchase(@PathVariable("ticketId") Long ticketId) {
+        ticketService.cancelPurchase(ticketId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
-
 }

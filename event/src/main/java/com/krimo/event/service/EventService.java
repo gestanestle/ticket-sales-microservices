@@ -32,9 +32,7 @@ class EventServiceImpl implements EventService{
                         eventDTO.getDateTime(),
                         eventDTO.getCreatedBy());
 
-        Event createdEvent = eventRepository.saveAndFlush(event);
-
-        return createdEvent.getId();
+        return eventRepository.saveAndFlush(event).getId();
     }
 
     @Override
