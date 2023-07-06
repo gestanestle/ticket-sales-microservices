@@ -36,7 +36,6 @@ class EventControllerTest {
     ObjectMapper objectMapper = new ObjectMapper();
 
     String eventDtoJson;
-
     Event event;
     EventDTO eventDTO;
 
@@ -54,8 +53,6 @@ class EventControllerTest {
         event = EventTest.eventInit();
 
     }
-
-
 
     @Test
     void createEvent() throws Exception {
@@ -79,7 +76,7 @@ class EventControllerTest {
                 .andExpect(status().is(200))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value(event.getName()));
+                .andExpect(jsonPath("$.name").value(eventDTO.getName()));
     }
 
     @Test
@@ -90,7 +87,7 @@ class EventControllerTest {
                 .andExpect(status().is(200))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].name").value(event.getName()));
+                .andExpect(jsonPath("$[0].name").value(eventDTO.getName()));
     }
 
     @Test
