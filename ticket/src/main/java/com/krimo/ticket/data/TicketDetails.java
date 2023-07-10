@@ -1,4 +1,4 @@
-package com.krimo.event.data;
+package com.krimo.ticket.data;
 
 import lombok.*;
 
@@ -16,14 +16,6 @@ public class TicketDetails {
     private Integer price;
     @Column(name = "total_stock")
     private Integer totalStock;
-    @Column(name = "total_sold", updatable = false)
-    private Integer totalSold;
-
-    public TicketDetails(TicketDetailsPK pk, Integer price, Integer totalStock) {
-        this.pk = pk;
-        this.price = price;
-        this.totalStock = totalStock;
-    }
 
     public static TicketDetails create(TicketDetailsPK pk, Integer price, Integer totalStock) {
         return new TicketDetails(pk, price, totalStock);

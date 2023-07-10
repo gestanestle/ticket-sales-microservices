@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "ticket", indexes = @Index(name = "idx_event_id", columnList = "event_id"))
+@Table(name = "ticket")
 public class Ticket {
 
     @Id
@@ -20,6 +20,7 @@ public class Ticket {
     private Long id;
     @Column(name = "event_id")
     private Long eventId;
+    @Enumerated(EnumType.STRING)
     private Section section;
     @Column(name = "ticket_code")
     private String ticketCode;

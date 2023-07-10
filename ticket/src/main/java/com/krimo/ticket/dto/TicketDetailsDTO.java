@@ -1,7 +1,7 @@
-package com.krimo.event.dto;
+package com.krimo.ticket.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.krimo.event.data.Section;
+import com.krimo.ticket.data.Section;
 import lombok.*;
 
 
@@ -18,6 +18,4 @@ public class TicketDetailsDTO {
     private Integer price;
     @JsonProperty("total_stock")
     private Integer totalStock;
-    @JsonProperty("total_sold")
-    private Integer totalSold;
 }

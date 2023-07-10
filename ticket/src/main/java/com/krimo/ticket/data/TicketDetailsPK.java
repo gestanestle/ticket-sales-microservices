@@ -1,4 +1,4 @@
-package com.krimo.event.data;
+package com.krimo.ticket.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,12 +15,12 @@ import java.io.Serializable;
 @Embeddable
 public class TicketDetailsPK implements Serializable {
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "event_id")
-    private Event event;
+    @Column(name = "event_id")
+    private Long eventId;
+    @Column(name = "section")
     @Enumerated(EnumType.STRING)
     private Section section;
 
-    public static TicketDetailsPK of(Event event, Section section) { return new TicketDetailsPK(event, section); }
+    public static TicketDetailsPK of(Long eventId, Section section) { return new TicketDetailsPK(eventId, section); }
 
 }
