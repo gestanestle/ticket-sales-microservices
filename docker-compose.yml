@@ -16,6 +16,8 @@ services:
       retries: 5
     environment:
       - POSTGRES_PASSWORD=postgres
+    networks:
+      - tsm
 
   zookeeper:
     container_name: zookeeper
@@ -24,6 +26,12 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     restart: always
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+    networks:
+      - tsm
 
   kafka:
     restart: always
@@ -31,6 +39,13 @@ services:
     image: confluentinc/cp-kafka:7.4.0
     depends_on:
       - zookeeper
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "9092"]
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    hostname: kafka
     ports:
       - "9092:9092"
     environment:
@@ -40,4 +55,34 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_CREATE_TOPICS: event-updates
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    networks:
+      - tsm
+
+  debezium:
+    container_name: debezium
+    image: debezium/connect:2.3
+    ports:
+      - "8083:8083"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: connect-configs
+      OFFSET_STORAGE_TOPIC: connect-offsets
+    networks:
+      - tsm
+
+networks:
+  tsm:
+    name: tsm
+
+
+# curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/debezium.json
+

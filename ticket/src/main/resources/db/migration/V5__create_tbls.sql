@@ -15,11 +15,3 @@ CREATE TABLE IF NOT EXISTS public.ticket (
              purchased_at TIMESTAMP,
              FOREIGN KEY (event_id, section) REFERENCES ticket_details(event_id, section)
 );
-
-CREATE TABLE IF NOT EXISTS public.outbox (
-             id UUID NOT NULL,
-             topic varchar(255) NOT NULL,
-             payload varchar(4096) NOT NULL,
-             timestamp TIMESTAMP,
-             CONSTRAINT pkey PRIMARY KEY (id)
-);
