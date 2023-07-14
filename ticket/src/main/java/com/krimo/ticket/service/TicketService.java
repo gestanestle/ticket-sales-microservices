@@ -1,9 +1,8 @@
 package com.krimo.ticket.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krimo.ticket.dao.EventDAO;
 import com.krimo.ticket.data.Outbox;
+import com.krimo.ticket.data.Section;
 import com.krimo.ticket.data.Ticket;
 import com.krimo.ticket.dto.TicketDTO;
 import com.krimo.ticket.exception.ApiRequestException;
@@ -11,11 +10,10 @@ import com.krimo.ticket.payload.TicketPurchasePayload;
 import com.krimo.ticket.repository.OutboxRepository;
 import com.krimo.ticket.repository.TicketDetailsRepository;
 import com.krimo.ticket.repository.TicketRepository;
+import com.krimo.ticket.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.security.SecureRandom;
 
 public interface TicketService {
 
@@ -33,39 +31,43 @@ class TicketServiceImpl implements TicketService {
     private final TicketDetailsRepository ticketDetailsRepository;
     private final OutboxRepository outboxRepository;
     private final EventDAO eventDAO;
-    private final ObjectMapper objectMapper;
 
-    private static final int CODE_LENGTH = 10;
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final SecureRandom secureRandom = new SecureRandom();
 
     @Override
     public Long purchaseTicket(TicketDTO ticketDTO) {
 
-        if (eventDAO.isCanceled(ticketDTO.getEventId())) { throw new ApiRequestException("Event has been canceled."); }
+        Long eventId = ticketDTO.getEventId();
+        Section section = ticketDTO.getSection();
+        Long purchasedBy = ticketDTO.getPurchasedBy();
 
-        int sold = ticketRepository.getSold(
-                ticketDTO.getEventId(),
-                ticketDTO.getSection()
-        );
+        // 1. Check if event is canceled
+        if (eventDAO.isCanceled(eventId)) { throw new ApiRequestException("Event has been canceled."); }
 
-        int stock = ticketDetailsRepository.getStock(
-                ticketDTO.getEventId(),
-                ticketDTO.getSection()
-        );
+        // 2. Check if sold out
+        int sold = ticketRepository.getSold(eventId, section);
+
+        int stock = ticketDetailsRepository.getStock(eventId, section);
 
         if (sold >= stock) { throw new ApiRequestException("Sold out."); }
 
-        Long id = createTicket(ticketDTO);
-        saveToOutbox(ticketDTO.getEventId(), ticketDTO.getPurchasedBy());
+        // 3. If event not canceled and ticket not sold out, create and save ticket, then save to outbox
+        String ticketCode = Utils.generateSerialCode();
+
+        Ticket ticket = Ticket.create(eventId, section, ticketCode, purchasedBy);
+        Long id = ticketRepository.saveAndFlush(ticket).getId();
+
+        String topic = "ticket_purchase";
+        String eventName = eventDAO.getEventName(eventId).orElseThrow();
+        String payload = Utils.writeTPPayloadToJson(new TicketPurchasePayload(eventName, purchasedBy));
+
+        outboxRepository.save(Outbox.publish(topic, payload));
 
         return id;
     }
 
     @Override
     public TicketDTO viewTicket(Long id) {
-
-        Ticket ticket = getTicket(id);
+        Ticket ticket = ticketRepository.findById(id).orElseThrow();
         return mapToTicketDTO(ticket);
     }
 
@@ -73,43 +75,6 @@ class TicketServiceImpl implements TicketService {
     public void cancelPurchase(Long id) {
         ticketRepository.deleteById(id);
     }
-
-    private Long createTicket(TicketDTO ticketDTO) {
-        
-        // serial code generator
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < CODE_LENGTH; i++) {
-            stringBuilder.append(CHARACTERS.charAt(secureRandom.nextInt(CHARACTERS.length())));
-        }
-
-        String ticketCode = stringBuilder.toString();
-        
-        Ticket ticket = Ticket.create(
-                ticketDTO.getEventId(),
-                ticketDTO.getSection(),
-                ticketCode,
-                ticketDTO.getPurchasedBy()
-        );
-        return ticketRepository.saveAndFlush(ticket).getId();
-    }
-
-    private void saveToOutbox(Long eventId, Long purchasedBy) {
-
-        String topic = "ticket_purchase";
-        String payloadJson;
-        String eventName = eventDAO.getEventName(eventId).orElseThrow();
-
-        try {
-            payloadJson = objectMapper.writeValueAsString(new TicketPurchasePayload(eventName, purchasedBy));
-        } catch (JsonProcessingException e) {
-            throw new ApiRequestException("Unable to serialize message.");
-        }
-
-        outboxRepository.save(Outbox.publish(topic, payloadJson));
-
-    }
-
-    private Ticket getTicket(Long id) { return ticketRepository.findById(id).orElseThrow(); }
 
     private TicketDTO mapToTicketDTO(Ticket ticket) {
         return TicketDTO.builder()

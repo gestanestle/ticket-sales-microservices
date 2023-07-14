@@ -3,11 +3,11 @@ package com.krimo.ticket.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import com.krimo.ticket.data.TicketTest;
-import com.krimo.ticket.dto.TicketDTO;
+import com.krimo.ticket.data.TicketDetails;
+import com.krimo.ticket.data.TicketDetailsTest;
+import com.krimo.ticket.dto.TicketDetailsDTO;
 import com.krimo.ticket.exception.ApiRequestException;
-import com.krimo.ticket.service.TicketService;
+import com.krimo.ticket.service.TicketDetailsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,61 +18,65 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@WebMvcTest(controllers = TicketController.class)
-class TicketControllerTest {
+@WebMvcTest(controllers = TicketDetailsController.class)
+public class TicketDetailsControllerTest {
 
     @MockBean
-    private TicketService ticketService;
+    private TicketDetailsService ticketDetailsService;
     @Autowired
     private MockMvc mockMvc;
 
     ObjectMapper objectMapper = new ObjectMapper();
-    TicketDTO ticketDTO;
+
     String dtoJson;
+    TicketDetailsDTO dto;
+    TicketDetails ticketDetails;
 
     @BeforeEach
     void setUp() {
-        ticketDTO = TicketTest.ticketDTOInit();
+        dto = TicketDetailsTest.ticketDetailsDTOInit();
 
         try {
             objectMapper.registerModule(new JavaTimeModule());
-            dtoJson = objectMapper.writeValueAsString(ticketDTO);
+            dtoJson = objectMapper.writeValueAsString(dto);
         } catch (JsonProcessingException e) {
             throw new ApiRequestException("Unable to serialize message.");
         }
+
+        ticketDetails = TicketDetailsTest.ticketDetailsVIP();
     }
 
     @Test
-    void purchaseTicket() throws Exception {
+    void setTicketDetails() throws Exception{
+
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("http://localhost:8082/api/v2/tickets")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(dtoJson)
-                        .characterEncoding(StandardCharsets.UTF_8))
+                    .post(String.format("http://localhost:8082/api/v2/events/%s/ticket-details", 1))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(dtoJson)
+                    .characterEncoding(StandardCharsets.UTF_8))
                 .andExpect(status().is(201));
+
     }
 
     @Test
-    void viewTicket() throws Exception {
-        when(ticketService.viewTicket(anyLong())).thenReturn(ticketDTO);
+    void getTicketDetailsByEvent() throws Exception{
+        when(ticketDetailsService.getTicketDetailsByEvent(anyLong())).thenReturn(List.of(dto));
+
         mockMvc.perform(MockMvcRequestBuilders
-                        .get(String.format("http://localhost:8082/api/v2/tickets/%s", 1)))
+                    .get(String.format("http://localhost:8082/api/v2/events/%s/ticket-details", 1)))
                 .andExpect(status().is(200))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.event_id").value(ticketDTO.getEventId()))
-                .andExpect(jsonPath("$.ticket_code").value(ticketDTO.getTicketCode()));
+                .andExpect(jsonPath("$[0].event_id").value(dto.getEventId()))
+                .andExpect(jsonPath("$[0].section").value(dto.getSection().name()));
     }
 
-    @Test
-    void cancelPurchase() throws Exception {
-        mockMvc.perform(
-                MockMvcRequestBuilders
-                        .delete(String.format("http://localhost:8082/api/v2/tickets/%s", 1)))
-                .andExpect(status().is(200));
-    }
+
+
 }
