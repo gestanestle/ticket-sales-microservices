@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 public interface EventService {
 
     Long createEvent(EventDTO eventDTO);
@@ -43,9 +45,7 @@ class EventServiceImpl implements EventService{
 
     @Override
     public List<EventDTO> getAllEvents() {
-        List<EventDTO> eventDTOList = new ArrayList<>();
-        eventRepository.findAll().forEach(event -> eventDTOList.add(mapToEventDTO(event)));
-        return eventDTOList;
+        return eventRepository.findAll().stream().map(this::mapToEventDTO).collect(Collectors.toList());
     }
 
     @Override

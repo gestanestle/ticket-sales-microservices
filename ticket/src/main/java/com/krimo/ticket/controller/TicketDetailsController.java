@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v2/events")
+@RequestMapping("api/v2/event")
 @RequiredArgsConstructor
 @Slf4j
 public class TicketDetailsController {

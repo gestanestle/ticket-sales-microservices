@@ -1,3 +1,3 @@
-GRANT SELECT ON public.event TO userticket;
+GRANT SELECT ON public.event TO ticketmanager;
 
-GRANT ALL PRIVILEGES ON public.flyway_schema_history TO userticket;
+GRANT ALL PRIVILEGES ON public.flyway_schema_history TO ticketmanager;

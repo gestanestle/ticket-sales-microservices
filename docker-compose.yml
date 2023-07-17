@@ -79,6 +79,14 @@ services:
     networks:
       - tsm
 
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - tsm
+
 networks:
   tsm:
     name: tsm

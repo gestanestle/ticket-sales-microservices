@@ -14,7 +14,8 @@
         <module>eureka</module>
         <module>event</module>
         <module>ticket</module>
-        <module>email</module>
+        <module>userprofile</module>
+        <module>notification</module>
     </modules>
 
     <properties>

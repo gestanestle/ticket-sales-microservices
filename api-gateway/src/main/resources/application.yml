@@ -23,6 +23,11 @@ spring:
           uri: lb://TICKET
           predicates:
           - Path=/api/v2/tickets/**
+          - Path=/api/v2/event/**
+        - id: userprofile
+          uri: lb://USERPROFILE
+          predicates:
+          - Path=/api/v2/user-profiles/**
         - id: swagger-ui-event
           uri: lb://EVENT/api/v2/events/swagger/ui
           predicates:
@@ -35,6 +40,12 @@ spring:
             - Path=/swagger-ui/**,/swagger-resources/**, /swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
           filters:
             - RewritePath=/api/v2/tickets/(?<path>.*), /$\{path}
+        - id: swagger-ui-user-profile
+          uri: lb://USERPROFILE/api/v2/user-profiles/swagger/ui
+          predicates:
+            - Path=/swagger-ui/**,/swagger-resources/**, /swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
+          filters:
+            - RewritePath=/api/v2/user-profiles/(?<path>.*), /$\{path}
 
 
 # Logger configuration

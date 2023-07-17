@@ -14,7 +14,7 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/event_ticket_db
-    username: userevent
+    username: eventmanager
     password: postgres
 
   # JPA properties
@@ -54,4 +54,4 @@ eureka:
 # API Docs
 springdoc:
   api-docs:
-    path: /api/v2/event/api-docs
+    path: /api/v2/events/api-docs
