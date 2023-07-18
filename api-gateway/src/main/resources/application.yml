@@ -22,12 +22,13 @@ spring:
         - id: ticket
           uri: lb://TICKET
           predicates:
-          - Path=/api/v2/tickets/**
-          - Path=/api/v2/event/**
+          - Path=/api/v2/tickets/**, /api/v2/event/**
         - id: userprofile
           uri: lb://USERPROFILE
           predicates:
           - Path=/api/v2/user-profiles/**
+
+#        SWAGGER
         - id: swagger-ui-event
           uri: lb://EVENT/api/v2/events/swagger/ui
           predicates:
