@@ -13,6 +13,7 @@ spring:
     username: userprofilemanager
     password: postgres
 
+  # JPA properties
   jpa:
     hibernate:
       ddl-auto: update
@@ -21,13 +22,19 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
     generate-ddl: false
+    properties:
+      hibernate:
+        format_sql: true
 
+# Logger configuration
 logging:
   pattern:
     console: "%d %-5level %logger : %msg%n"
   level:
     org.springframework: info
-    org.hibernate: debug
+    org.hibernate.stat: debug
+    org.hibernate.sql: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
 
 # Server configuration
 server:
@@ -48,3 +55,13 @@ eureka:
 springdoc:
   api-docs:
     path: /api/v2/user-profiles/docs
+
+# Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

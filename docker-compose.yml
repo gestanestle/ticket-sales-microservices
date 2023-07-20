@@ -1,4 +1,5 @@
 version: '3.9'
+
 services:
 
   postgres:
@@ -86,11 +87,60 @@ services:
       - "6379:6379"
     networks:
       - tsm
+      
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: on-failure
+    volumes:
+      - ./prometheus:/etc/prometheus/
+      - prometheus_data:/prometheus
+    networks:
+      - tsm
+
+  grafana:
+    image: grafana/grafana:10.0.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/
+      -  grafana_data:/var/lib/grafana
+    networks:
+      - tsm
+
+  postgres-exporter:
+    container_name: postgres-exporter
+    image: wrouesnel/postgres_exporter:v0.8.0
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres:5432/?sslmode=disable
+      - DATA_SOURCE_USER=postgres
+      - DATA_SOURCE_PASS=postgres
+    depends_on:
+      - postgres
+    restart: always
+    ports:
+      - "9187:9187"
+    networks:
+      - tsm
 
 networks:
   tsm:
     name: tsm
 
+volumes:
+  prometheus_data:
+  grafana_data:
 
 # curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/debezium.json
 

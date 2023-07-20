@@ -33,7 +33,6 @@ logging:
     console: "%d %-5level %logger : %msg%n"
   level:
     org.springframework: info
-    org.hibernate: debug
 
 # Server configuration
 server:
@@ -49,3 +48,13 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka
+
+# Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

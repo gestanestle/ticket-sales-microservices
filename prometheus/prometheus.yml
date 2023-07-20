@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+      scheme: http
+      timeout: 10s
+      api_version: v1
+scrape_configs:
+  - job_name: prometheus
+    honor_timestamps: true
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          - 10.0.2.15:9090
+  - job_name: spring-actuator
+    metrics_path: /actuator/prometheus
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+        - 10.0.2.15:8761
+        - 10.0.2.15:9000
+        - 10.0.2.15:8081
+        - 10.0.2.15:8082
+        - 10.0.2.15:8084
+        - 10.0.2.15:8085
+  - job_name: postgres-exporter
+    static_configs:
+      - targets:
+        - 10.0.2.15:9187
+
