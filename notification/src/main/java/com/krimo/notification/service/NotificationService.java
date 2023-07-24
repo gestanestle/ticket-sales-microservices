@@ -1,52 +1,62 @@
 package com.krimo.notification.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.krimo.notification.exception.ApiRequestException;
-import com.krimo.notification.message.BrokerMessage;
 import com.krimo.notification.message.payload.TicketPurchasePayload;
-import com.krimo.notification.repository.BrokerMessageRepository;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+public interface NotificationService {
+    void sendConfirmationMessage(String msgID, String msgPayload) throws Exception;
+}
 @Transactional
 @Service
 @RequiredArgsConstructor
-@Slf4j
-class NotificationService {
+class NotificationServiceImpl implements NotificationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(NotificationServiceImpl.class);
     private final ObjectMapper objectMapper;
     private final MessageSenderService senderService;
     private final ClientService clientService;
-    private final BrokerMessageRepository messageRepository;
+    private final static int MAX_RETRIES = 3;
 
-    @KafkaListener(topics = "outbox.event.ticket_purchase")
-    public void sendPurchaseConfirmation(String ticketPurchase) {
+    public void sendConfirmationMessage(String msgID, String msgPayload) throws Exception {
+        TicketPurchasePayload payload = objectMapper.readValue(msgPayload, TicketPurchasePayload.class);
 
-        BrokerMessage message;
+        Long userId = payload.purchasedBy();
+        String email = null;
 
-        try {
-            message = objectMapper.readValue(ticketPurchase, BrokerMessage.class);
-        } catch (JsonProcessingException e) {
-            throw new ApiRequestException("Unable to deserialize broker message.");
+        int retries = 0;
+        while (retries < MAX_RETRIES) {
+            try {
+                email = clientService.getEmail(userId);
+                break;
+            } catch (FeignException e) {
+                retries++;
+            }
         }
 
-        if (messageRepository.isKeyPresent(message.id())) { return; }
-
-        TicketPurchasePayload payload;
-        try {
-            payload = objectMapper.readValue(message.payload(), TicketPurchasePayload.class);
-        } catch (JsonProcessingException e) {
-            throw new ApiRequestException("Unable to deserialize broker message payload.");
+        if (retries == MAX_RETRIES) {
+            logger.debug("FEIGN ERROR: Max retries reached.");
+            throw new Exception();
         }
 
-        String email = clientService.getEmail(payload.purchasedBy());
-        String arg = payload.eventName();
+        final String subject = "Confirmation: Successful Ticket Purchase";
 
-        senderService.sendMessage(email, arg);
-        messageRepository.saveMessage(message);
+        final String msg =
+                """
+                        Congratulations! Your ticket purchase for %s is confirmed.
+                   
+                        
+                        Thank you for choosing to be a part of this memorable experience. We can't wait to see you there!
+                        
+                        """;
+
+        senderService.sendMessage(email, subject, String.format(msg, payload.eventName()));
     }
+    
 }
