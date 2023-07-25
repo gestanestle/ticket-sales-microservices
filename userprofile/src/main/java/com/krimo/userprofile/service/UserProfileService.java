@@ -16,6 +16,8 @@ public interface UserProfileService {
     UserProfileDTO getUserProfile(Long id);
     List<UserProfileDTO> getUserProfiles();
     String getUserEmail (Long id);
+
+    void deleteUserProfile(Long id);
 }
 
 @RequiredArgsConstructor
@@ -42,10 +44,13 @@ class UserProfileServiceImpl implements UserProfileService {
     public void updateUserProfile(Long id, UserProfileDTO dto) {
         UserProfile userProfile = userProfileRepository.findById(id).orElseThrow();
 
-        UserProfile updatedUserProfile = mapToEntity(dto);
-        userProfile.setId(userProfile.getId());
-        userProfile.setRegisteredAt(userProfile.getRegisteredAt());
-        userProfileRepository.save(updatedUserProfile);
+        if (dto.getEmail() != null) { userProfile.setEmail(dto.getEmail()); }
+        if (dto.getPhone() != null) { userProfile.setPhone(dto.getPhone()); }
+        if (dto.getLastName() != null) { userProfile.setLastName(dto.getLastName()); }
+        if (dto.getFirstName() != null) { userProfile.setFirstName(dto.getFirstName()); }
+        if (dto.getBirthDate() != null) { userProfile.setBirthDate(dto.getBirthDate()); }
+
+        userProfileRepository.save(userProfile);
      }
 
     @Override
@@ -64,6 +69,11 @@ class UserProfileServiceImpl implements UserProfileService {
         return userProfileRepository.getReferenceById(id).getEmail();
     }
 
+    @Override
+    public void deleteUserProfile(Long id) {
+        userProfileRepository.deleteById(id);
+    }
+
     private UserProfileDTO mapToDTO(UserProfile userProfile) {
         return UserProfileDTO.builder()
                 .id(userProfile.getId())
@@ -76,14 +86,5 @@ class UserProfileServiceImpl implements UserProfileService {
                 .build();
     }
 
-    private UserProfile mapToEntity(UserProfileDTO dto) {
-        return UserProfile.builder()
-                .lastName(dto.getLastName())
-                .firstName(dto.getFirstName())
-                .email(dto.getEmail())
-                .phone(dto.getPhone())
-                .birthDate(dto.getBirthDate())
-                .build();
-    }
 
 }

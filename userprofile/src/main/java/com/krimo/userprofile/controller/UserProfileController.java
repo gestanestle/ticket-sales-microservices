@@ -38,6 +38,12 @@ public class UserProfileController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @DeleteMapping(path = "{id}")
+    public ResponseEntity<Object> updateUserProfile(@PathVariable("id") Long id) {
+        userProfileService.deleteUserProfile(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @GetMapping(path = "{id}/email")
     public ResponseEntity<String> getUserEmail(@PathVariable("id") Long id) {
         return new ResponseEntity<>(userProfileService.getUserEmail(id), HttpStatus.OK);
