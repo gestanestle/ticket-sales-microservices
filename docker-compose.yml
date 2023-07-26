@@ -134,6 +134,115 @@ services:
     networks:
       - tsm
 
+  api-gateway:
+    image: gestanestle/api-gateway:v2.0
+    container_name: api-gateway
+    links:
+      - eureka
+    restart: always
+    ports:
+      - "9000:9000"
+    networks:
+      - tsm
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+
+  eureka:
+    image: gestanestle/eureka:v2.0
+    container_name: eureka
+    networks:
+      - tsm
+    ports:
+      - "8761:8761"
+    restart: always
+
+  event:
+    image: gestanestle/event:v2.0
+    container_name: event
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: "curl --fail --silent localhost:8081/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/event_ticket_db
+
+  notification:
+    image: gestanestle/notification:v2.0
+    container_name: notification
+    networks:
+      - tsm
+    depends_on:
+      - kafka
+      - redis
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      - SPRING_REDIS_HOST=redis
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
+
+  ticket:
+    image: gestanestle/ticket:v2.0
+    container_name: ticket
+    ports:
+      - "8082:8082"
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+      event:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/event_ticket_db
+    healthcheck:
+      test: "curl --fail --silent localhost:8082/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  userprofile:
+    image: gestanestle/userprofile:v2.0
+    container_name: userprofile
+    ports:
+      - "8084:8084"
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/userprofile_db
+    healthcheck:
+      test: "curl --fail --silent localhost:8084/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
 networks:
   tsm:
     name: tsm

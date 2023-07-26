@@ -5,13 +5,13 @@ spring:
     gateway:
       routes:
         - id: eureka
-          uri: http://localhost:8761
+          uri: lb://EUREKA:8761
           predicates:
           - Path=/eureka/web
           filters:
           - SetPath=/
         - id: eureka-static
-          uri: http://localhost:8761
+          uri: lb://EUREKA:8761
           predicates:
           - Path=/eureka/**
 

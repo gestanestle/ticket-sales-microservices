@@ -75,14 +75,14 @@
     </dependencies>
 
     <build>
-        <finalName>user-profile</finalName>
+        <finalName>userprofile</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.7.5</version>
                 <configuration>
-                    <mainClass>com.krimo.gateway.ApiGatewayApplication</mainClass>
+                    <mainClass>com.krimo.userprofile.UserProfileApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
