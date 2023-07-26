@@ -18,7 +18,7 @@ Ticket Sales Microservices uses a number of tools and frameworks to work properl
 - Spring Data Redis, Jedis
 - JUnit, Mockito, MockMVC, Test Containers
 - Java Mail Sender, Gmail SMTP
-- Apache Kafka, Zookeper
+- Apache Kafka, Zookeeper
 - Debezium
 - Docker, Docker Compose
 - Prometheus
