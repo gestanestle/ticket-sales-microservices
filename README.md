@@ -27,14 +27,14 @@ Ticket Sales Microservices uses a number of tools and frameworks to work properl
 
 ## THE ARCHITECTURE
 
-![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/58a24391-a4e8-4aff-ab39-3aa170578234)
+![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/c0bbc482-4fe7-4cb6-baa2-6ad30b342935)
 
 ### Event-Driven and CDC
 This ticket sales system is based on event-driven architecture. It implements the Outbox Pattern with CDC, through the use of Debezium, to capture data change from PostgreSQL and publish  the records to Apache Kafka. On the other hand, the consumer subscribes to the topic and caches the broker message to Redis. For our use-case, the producer is the Ticket Service, while the consumer is the Notification Service. The event is "ticket purchase"; the post-event is the confirmation email. </br>
 
 This is the sequence diagram of such event: 
 
-![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/0c7d3625-ed11-4928-940e-9ff789100c88)
+![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/4ae80209-1750-4c6c-8774-44362f25b49f)
 
 ### Shared Database
 Event Management and Ticket Sales are the two main contexts of this application. These services share some data needed to be able to operate successfully. It follows a microservices pattern called 'shared database', with whose objects are set with fine-grained access privileges accordingly.
@@ -47,7 +47,7 @@ The services Event, Ticket , and Notification are unit-tested with JUnit, Mockit
 
 ### Monitoring
 
-![graf](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/2a63aedb-28d3-468e-95cc-e4285e6ddacc)
+![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/96b39b52-4433-4aa5-a86a-e528cb2d0653)
 
 Spring Boot Actuator exposes the metrics of each services, including the API Gateway and Discovery Server, while a third-party exporter exposes the metrics of the database. Prometheus scrapes these, serving as datasources to Grafana, which then visualizes the data in the dashboards. The endpoints are accessible through ports 9090 and 3000, respectively.
 
@@ -78,7 +78,7 @@ http://localhost:9000/api/v2/tickets/swagger/ui
 ```
 For Ticket Service, it will be as follows: </br>
 
-![tckt](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/1c378372-a311-4d58-a772-908676222ef9)
+![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/6f3949b5-b6c0-421b-96f5-19a139a3fef8)
 
 ### Managing the records
 You can check the roles and schema present in the database with the command provided below. The password is [ postgres ].
