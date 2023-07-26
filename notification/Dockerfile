@@ -1,4 +1,4 @@
 FROM openjdk:17
-ADD target/email.jar email.jar
-EXPOSE 8083
-ENTRYPOINT ["java", "-jar", "email.jar"]
+ADD target/notification.jar notification.jar
+EXPOSE 8085
+ENTRYPOINT ["java", "-jar", "notification.jar"]
