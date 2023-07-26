@@ -1,12 +1,22 @@
 # Spring Boot configuration
 spring:
-  application:
-    name: ticket
-  data:
-    mongodb:
-      database: ${DB_NAME}
-      port: %{MONGODB_PORT}
-#      host: localhost
+  flyway:
+    enabled: false
+  # Database
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  # JPA properties
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    generate-ddl: true
 
 # Logger configuration
 logging:

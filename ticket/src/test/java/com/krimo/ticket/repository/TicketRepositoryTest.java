@@ -1,44 +1,67 @@
 package com.krimo.ticket.repository;
 
 import com.krimo.ticket.TicketApplication;
-import com.krimo.ticket.config.MongoContainerEnv;
-import com.krimo.ticket.data.Event;
-import com.krimo.ticket.data.TestEntityBuilder;
+import com.krimo.ticket.config.PostgresContainerEnv;
 import com.krimo.ticket.data.Ticket;
-
+import com.krimo.ticket.data.TicketDetails;
+import com.krimo.ticket.data.TicketDetailsTest;
+import com.krimo.ticket.data.TicketTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Collections;
+
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = TicketApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class TicketRepositoryTest extends MongoContainerEnv {
+public class TicketRepositoryTest extends PostgresContainerEnv {
 
+    @Autowired
+    private TicketDetailsRepository ticketDetailsRepository;
     @Autowired
     private TicketRepository ticketRepository;
 
-    TestEntityBuilder testEntityBuilder = new TestEntityBuilder();
+    TicketDetails expected;
+
+    @BeforeEach
+    void setUp() {
+        expected =TicketDetailsTest.ticketDetailsVIP();
+        ticketDetailsRepository.save(expected);
+    }
 
     @Test
-    void findByEventCode() {
-        // Given
+    void getTicketDetailsByEvent() {
 
-        Ticket ticket = testEntityBuilder.ticket();
+        List<TicketDetails> actual = ticketDetailsRepository
+                .getTicketDetailsByEvent(expected.getPk().getEventId());
 
-        Event event = new Event(ticket.getEventCode(), Collections.singletonList(ticket));
+        assertThat(actual.get(0)).usingRecursiveComparison().isEqualTo(expected);
+    }
 
-        // When
-        ticketRepository.save(event);
+    @Test
+    void getStock() {
 
-        // Then
-        boolean expected = ticketRepository.findByEventCode(ticket.getEventCode()).isPresent();
-        assertThat(expected).isTrue();
+        int actual = ticketDetailsRepository.getStock(
+                expected.getPk().getEventId(), expected.getPk().getSection());
+
+        assertThat(actual).isEqualTo(expected.getTotalStock());
+    }
+
+    @Test
+    void getSold() {
+        Ticket ticket = TicketTest.ticketInit();
+        ticketRepository.save(ticket);
+
+        int actual = ticketRepository.getSold(ticket.getEventId(), ticket.getSection());
+
+        assertThat(actual).isEqualTo(1);
     }
 }

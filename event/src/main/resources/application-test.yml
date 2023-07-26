@@ -1,5 +1,8 @@
 # Spring Boot configuration
 spring:
+  profiles: test
+  flyway:
+    enabled: false
   # Database
   datasource:
     driver-class-name: org.postgresql.Driver

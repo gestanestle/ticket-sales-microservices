@@ -4,11 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.krimo.event.data.Event;
-import com.krimo.event.data.Section;
-import com.krimo.event.data.TestEntityBuilder;
+import com.krimo.event.data.EventTest;
 import com.krimo.event.dto.EventDTO;
+import com.krimo.event.exception.ApiRequestException;
 import com.krimo.event.service.EventService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +16,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -33,102 +33,72 @@ class EventControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    TestEntityBuilder testEntityBuilder = new TestEntityBuilder();
-
     ObjectMapper objectMapper = new ObjectMapper();
 
     String eventDtoJson;
-    String eventCodeOne;
-    String eventCodeTwo;
-    Event eventOne;
-    Event eventTwo;
+    Event event;
     EventDTO eventDTO;
 
     @BeforeEach
     void setUp() {
-        eventCodeOne = "d21d68f9-667c-42c0-8a0a-7bc01db1a45a";
-        eventCodeTwo = "c9ad1ed4-f17d-47d4-87d4-701005629e4b";
-
-        eventOne = testEntityBuilder.event();
-        eventOne.setEventCode(eventCodeOne);
-
-        eventTwo = testEntityBuilder.event();
-        eventTwo.setEventCode(eventCodeTwo);
-
-        eventDTO =  testEntityBuilder.eventDTO();
+        eventDTO = EventTest.eventDTOInit();
 
         try {
             objectMapper.registerModule(new JavaTimeModule());
             eventDtoJson = objectMapper.writeValueAsString(eventDTO);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new ApiRequestException("Unable to serialize message.");
         }
-    }
 
-    @AfterEach
-    void tearDown() {
+        event = EventTest.eventInit();
+
     }
 
     @Test
     void createEvent() throws Exception {
-
-        when(eventService.createEvent(eventDTO)).thenReturn(eventCodeOne);
+        when(eventService.createEvent(any(EventDTO.class))).thenReturn(1L);
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("http://localhost:9000/api/v1/event")
+                        .post("http://localhost:8081/api/v2/events")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(eventDtoJson)
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andExpect(status().is(201))
-                .andExpect(content().string(eventCodeOne));
+                .andExpect(content().string("1"));
     }
 
     @Test
-    void readEvent() throws Exception {
-        when(eventService.readEvent(eventCodeOne)).thenReturn(eventOne);
+    void getEvent() throws Exception {
+        when(eventService.getEvent(anyLong())).thenReturn(eventDTO);
 
-        mockMvc.perform(MockMvcRequestBuilders.get(String.format("http://localhost:9000/api/v1/event/%s", eventCodeOne)))
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("http://localhost:8081/api/v2/events/%s", 1)))
                 .andExpect(status().is(200))
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.eventCode").value(eventCodeOne));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value(eventDTO.getName()));
     }
 
     @Test
-    void readAllEvents() throws Exception {
-        when(eventService.readAllEvents()).thenReturn(Arrays.asList(eventOne, eventTwo));
+    void getAllEvents() throws Exception {
+        when(eventService.getAllEvents()).thenReturn(List.of(eventDTO));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("http://localhost:9000/api/v1/event/all"))
+        mockMvc.perform(MockMvcRequestBuilders.get("http://localhost:8081/api/v2/events"))
                 .andExpect(status().is(200))
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].eventCode").value(eventCodeOne))
-                .andExpect(jsonPath("$[1].eventCode").value(eventCodeTwo));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value(eventDTO.getName()));
     }
 
     @Test
     void updateEvent() throws Exception {
+
         mockMvc.perform(MockMvcRequestBuilders
-                        .put(String.format("http://localhost:9000/api/v1/event/%s", eventCodeOne))
+                        .put(String.format("http://localhost:8081/api/v2/events/%s", 1))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(eventDtoJson)
                         .characterEncoding(StandardCharsets.UTF_8))
-                .andExpect(status().is(200))
-                .andExpect(content().string(eventCodeOne));
-    }
-
-    @Test
-    void deleteEvent() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders
-                        .delete(String.format("http://localhost:9000/api/v1/event/%s", eventCodeOne)))
-                .andExpect(status().is(200))
-                .andExpect(content().string(eventCodeOne));
-    }
-
-    @Test
-    void addAttendees() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders
-                        .put(String.format("http://localhost:9000/api/v1/event/%1$s/attendees/%2$s", eventCodeOne, Section.VIP))
-                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(200));
     }
+
 }

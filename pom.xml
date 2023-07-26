@@ -7,14 +7,15 @@
     <groupId>com.krimo</groupId>
     <artifactId>ticket-sales-microservices</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0</version>
 
     <modules>
         <module>api-gateway</module>
         <module>eureka</module>
         <module>event</module>
         <module>ticket</module>
-        <module>email</module>
+        <module>userprofile</module>
+        <module>notification</module>
     </modules>
 
     <properties>
@@ -49,6 +50,23 @@
         </dependencies>
     </dependencyManagement>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.6.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <version>1.10.5</version>
+        </dependency>
+    </dependencies>
+
 
 
     <build>
@@ -56,6 +74,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.7.5</version>
                 <configuration>
                     <excludes>
                         <exclude>

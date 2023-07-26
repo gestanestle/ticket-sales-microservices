@@ -1,126 +1,78 @@
 package com.krimo.event.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krimo.event.data.Event;
-import com.krimo.event.data.Section;
 import com.krimo.event.dto.EventDTO;
-import com.krimo.event.exception.ApiRequestException;
 import com.krimo.event.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+public interface EventService {
+
+    Long createEvent(EventDTO eventDTO);
+    EventDTO getEvent(Long id);
+    List<EventDTO> getAllEvents();
+    void updateEvent(Long id, EventDTO eventDTO);
+
+}
 
 @Service
 @RequiredArgsConstructor
-public class EventService{
+class EventServiceImpl implements EventService{
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
     private final EventRepository eventRepository;
-    private final ObjectMapper objectMapper;
 
-    @Value("${event.topic.name}")
-    String topic;
+    @Override
+    public Long createEvent(EventDTO eventDTO) {
 
-    public String createEvent(EventDTO eventDTO) {
+        Event event = Event.create(
+                        eventDTO.getName(),
+                        eventDTO.getDescription(),
+                        eventDTO.getVenue(),
+                        eventDTO.getDateTime(),
+                        eventDTO.getCreatedBy());
 
-        String eventCode = UUID.randomUUID().toString();
-
-        Event event = eventBuild(eventDTO);
-        event.setEventCode(eventCode);
-
-        eventRepository.save(event);
-
-        return eventCode;
+        return eventRepository.saveAndFlush(event).getId();
     }
 
-    public Event readEvent(String eventCode) {
-        return eventRepository.findByEventCode(eventCode).isPresent()
-                ? eventRepository.findByEventCode(eventCode).get()
-                : null;
+    @Override
+    public EventDTO getEvent(Long id) {
+        Event event = eventRepository.findById(id).orElseThrow();
+        return mapToEventDTO(event);
     }
 
-    public List<Event> readAllEvents() {
-        return eventRepository.findAll().stream().toList();
+    @Override
+    public List<EventDTO> getAllEvents() {
+        return eventRepository.findAll().stream().map(this::mapToEventDTO).collect(Collectors.toList());
     }
 
-    public void updateEvent(String eventCode, EventDTO eventDTO) {
+    @Override
+    public void updateEvent(Long id, EventDTO eventDTO) {
 
-        Event event = readEvent(eventCode);
+        Event event = eventRepository.findById(id).orElseThrow();
 
-        if(event == null) {
-            return;
-        }
+        if (eventDTO.getVenue() != null) { event.setVenue(eventDTO.getVenue()); }
+        if (eventDTO.getDescription() != null) { event.setDescription(eventDTO.getDescription()); }
+        if (eventDTO.getDateTime()!= null) { event.setDateTime(eventDTO.getDateTime()); }
+        if (eventDTO.getIsCanceled()!= null) { event.setIsCanceled(eventDTO.getIsCanceled()); }
 
-        Event updatedEvent = eventBuild(eventDTO);
-        updatedEvent.setEventCode(eventCode);
-        updatedEvent.setId(event.getId());
-        updatedEvent.setRegisteredAttendees(event.getRegisteredAttendees());
-
-        eventRepository.save(updatedEvent);
-
-        try {
-            String eventUpdate = objectMapper.writeValueAsString(updatedEvent);
-            kafkaTemplate.send(topic, eventUpdate);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public synchronized void addAttendee(String eventCode, Section section) {
-
-        List<Section> fullSections = new ArrayList<>();
-
-        Event event = readEvent(eventCode);
-
-        if(event == null) {
-            return;
-        }
-
-        HashMap<Section, Integer> registeredAttendees = event.getRegisteredAttendees() == null ?  new HashMap<>() : event.getRegisteredAttendees();
-
-        HashMap<Section, Integer> maxCapacity = event.getMaxCapacity();
-
-        for (Section key: registeredAttendees.keySet()) {
-            if (registeredAttendees.get(key) >= maxCapacity.get(key)) {
-                fullSections.add(key);
-            }
-        }
-
-        if (fullSections.contains(section)) {
-            throw new ApiRequestException("Section is already full.");
-        }
-
-        if (registeredAttendees.containsKey(section)) {
-            AtomicInteger integer = new AtomicInteger(registeredAttendees.get(section));
-            registeredAttendees.put(section, integer.incrementAndGet());
-        } else
-            registeredAttendees.put(section, 1);
-
-        event.setRegisteredAttendees(registeredAttendees);
         eventRepository.save(event);
     }
 
-    public void deleteEvent(String eventCode) {
+    // Reusable method - entity to dto mapping
 
-        eventRepository.deleteById(readEvent(eventCode).getId());
-    }
-
-    // Reusable method - entity mapping
-    public Event eventBuild(EventDTO eventDTO) {
-        return Event.builder()
-                .venue(eventDTO.getVenue())
-                .dateTime(eventDTO.getDateTime())
-                .title(eventDTO.getTitle())
-                .details(eventDTO.getDetails())
-                .maxCapacity(eventDTO.getMaxCapacity())
-                .organizer(eventDTO.getOrganizer())
+    private EventDTO mapToEventDTO(Event event) {
+        return EventDTO.builder()
+                .id(event.getId())
+                .name(event.getName())
+                .venue(event.getVenue())
+                .dateTime(event.getDateTime())
+                .description(event.getDescription())
+                .createdBy(event.getCreatedBy())
+                .createdAt(event.getCreatedAt())
+                .isCanceled(event.getIsCanceled())
                 .build();
     }
-
 }

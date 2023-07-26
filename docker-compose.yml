@@ -1,108 +1,54 @@
 version: '3.9'
+
 services:
 
   postgres:
-    image: postgres
+    container_name: postgres
+    image: debezium/postgres:15-alpine
     ports:
       - "5432:5432"
     restart: always
-    environment:
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=event
+    volumes:
+      - ./db-init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  mongo:
-    image: mongo:4.4.18
-    restart: always
     environment:
-      MONGO_INITDB_DATABASE: ticket
-    ports:
-      - "27017:27017"
-    healthcheck:
-      start_period: 40s
-      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  api-gateway:
-    image: gestanestle/api-gateway:1.0
-    ports:
-      - "9000:9000"
-    links:
-      - eureka
-    depends_on:
-      - event
-      - ticket
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
-
-  email:
-    image: gestanestle/email:1.0
-    ports:
-      - "8083:8083"
-    links:
-      - eureka
-    depends_on:
-      - kafka
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
-
-  event:
-    image: gestanestle/event:1.0
-    ports:
-      - "8081:8081"
-    links:
-      - eureka
-    depends_on:
-      postgres:
-        condition: service_healthy
-      kafka:
-        condition: service_started
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/event
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
-
-  ticket:
-    image: gestanestle/ticket:1.0
-    ports:
-      - "8082:8082"
-    links:
-     - eureka
-    depends_on:
-      mongo:
-        condition: service_healthy
-    environment:
-      - SPRING_DATA_MONGODB_DATABASE=ticket
-      - SPRING_DATA_MONGODB_PORT=27017
-      - SPRING_DATA_MONGODB_HOST=mongo
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
-
-  eureka:
-    image: gestanestle/eureka:1.0
-    ports:
-      - "8761:8761"
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - tsm
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:7.4.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    restart: always
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+    networks:
+      - tsm
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    restart: always
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.4.0
     depends_on:
       - zookeeper
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "localhost", "9092"]
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    hostname: kafka
     ports:
-      - 9092:9092
+      - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -110,3 +56,200 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    networks:
+      - tsm
+
+  debezium:
+    container_name: debezium
+    image: debezium/connect:2.3
+    ports:
+      - "8083:8083"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: connect-configs
+      OFFSET_STORAGE_TOPIC: connect-offsets
+    networks:
+      - tsm
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - tsm
+      
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: on-failure
+    volumes:
+      - ./prometheus:/etc/prometheus/
+      - prometheus_data:/prometheus
+    networks:
+      - tsm
+
+  grafana:
+    image: grafana/grafana:10.0.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/
+      -  grafana_data:/var/lib/grafana
+    networks:
+      - tsm
+
+  postgres-exporter:
+    container_name: postgres-exporter
+    image: wrouesnel/postgres_exporter:v0.8.0
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres:5432/?sslmode=disable
+      - DATA_SOURCE_USER=postgres
+      - DATA_SOURCE_PASS=postgres
+    depends_on:
+      - postgres
+    restart: always
+    ports:
+      - "9187:9187"
+    networks:
+      - tsm
+
+  api-gateway:
+    image: gestanestle/api-gateway:v2.0
+    container_name: api-gateway
+    links:
+      - eureka
+    restart: always
+    ports:
+      - "9000:9000"
+    networks:
+      - tsm
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+
+  eureka:
+    image: gestanestle/eureka:v2.0
+    container_name: eureka
+    networks:
+      - tsm
+    ports:
+      - "8761:8761"
+    restart: always
+
+  event:
+    image: gestanestle/event:v2.0
+    container_name: event
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: "curl --fail --silent localhost:8081/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/event_ticket_db
+
+  notification:
+    image: gestanestle/notification:v2.0
+    container_name: notification
+    networks:
+      - tsm
+    depends_on:
+      - kafka
+      - redis
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      - SPRING_REDIS_HOST=redis
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
+
+  ticket:
+    image: gestanestle/ticket:v2.0
+    container_name: ticket
+    ports:
+      - "8082:8082"
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+      event:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/event_ticket_db
+    healthcheck:
+      test: "curl --fail --silent localhost:8082/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  userprofile:
+    image: gestanestle/userprofile:v2.0
+    container_name: userprofile
+    ports:
+      - "8084:8084"
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/userprofile_db
+    healthcheck:
+      test: "curl --fail --silent localhost:8084/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+networks:
+  tsm:
+    name: tsm
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+# curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/debezium.json
+

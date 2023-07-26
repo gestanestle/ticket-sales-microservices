@@ -5,36 +5,48 @@ spring:
     gateway:
       routes:
         - id: eureka
-          uri: http://localhost:8761
+          uri: lb://EUREKA:8761
           predicates:
           - Path=/eureka/web
           filters:
           - SetPath=/
         - id: eureka-static
-          uri: http://localhost:8761
+          uri: lb://EUREKA:8761
           predicates:
           - Path=/eureka/**
 
         - id: event
           uri: lb://EVENT
           predicates:
-          - Path=/api/v1/event/**
+          - Path=/api/v2/events/**
         - id: ticket
           uri: lb://TICKET
           predicates:
-          - Path=/api/v1/ticket/**
+          - Path=/api/v2/tickets/**, /api/v2/event/**
+        - id: userprofile
+          uri: lb://USERPROFILE
+          predicates:
+          - Path=/api/v2/user-profiles/**
+
+#        SWAGGER
         - id: swagger-ui-event
-          uri: lb://EVENT/api/v1/event/swagger/ui
+          uri: lb://EVENT/api/v2/events/swagger/ui
           predicates:
             - Path=/swagger-ui/**,/swagger-resources/**,/swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
           filters:
-            - RewritePath=/api/v1/event/(?<path>.*), /$\{path}
+            - RewritePath=/api/v2/events/(?<path>.*), /$\{path}
         - id: swagger-ui-ticket
-          uri: lb://TICKET/api/v1/ticket/swagger/ui
+          uri: lb://TICKET/api/v2/tickets/swagger/ui
           predicates:
             - Path=/swagger-ui/**,/swagger-resources/**, /swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
           filters:
-            - RewritePath=/api/v1/ticket/(?<path>.*), /$\{path}
+            - RewritePath=/api/v2/tickets/(?<path>.*), /$\{path}
+        - id: swagger-ui-user-profile
+          uri: lb://USERPROFILE/api/v2/user-profiles/swagger/ui
+          predicates:
+            - Path=/swagger-ui/**,/swagger-resources/**, /swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
+          filters:
+            - RewritePath=/api/v2/user-profiles/(?<path>.*), /$\{path}
 
 
 # Logger configuration
@@ -59,4 +71,12 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
 
-
+# Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

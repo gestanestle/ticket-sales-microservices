@@ -19,3 +19,13 @@ logging:
     console: "%d %-5level %logger : %msg%n"
   level:
     org.springframework: info
+
+# Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

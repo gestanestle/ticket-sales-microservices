@@ -4,44 +4,46 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 
-@Getter
-@Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter @Setter
+@Builder
 @Entity
-@Table(name = "event")
+@Table(name = "event", indexes = @Index(name = "idx_event_name", columnList = "event_name"))
 public class Event {
 
     @Id
-    @SequenceGenerator(name = "eo_seq", sequenceName = "eo_seq", allocationSize = 1)
-    @GeneratedValue(generator = "eo_seq", strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "event_id")
     private Long id;
-    private String eventCode;
+    @Column(name = "event_name")
+    private String name;
+    private String description;
     private String venue;
+    @Column(name = "date_time")
     private LocalDateTime dateTime;
-    private String title;
-    private String details;
-    private HashMap<Section, Integer> maxCapacity;
-    private HashMap<Section, Integer> registeredAttendees;
-    private String organizer;
+    @Column(name = "created_by")
+    private Long createdBy;
+    @Column(name = "created_At")
+    private LocalDateTime createdAt;
+    @Column(name = "is_canceled")
+    private Boolean isCanceled;
 
-    public Event(String eventCode,
-                 String venue, LocalDateTime dateTime,
-                 String title,
-                 String details,
-                 HashMap<Section, Integer> maxCapacity,
-                 HashMap<Section, Integer> registeredAttendees,
-                 String organizer) {
-        this.eventCode = eventCode;
+    public Event(String name, String description, String venue, LocalDateTime dateTime, Long createdBy, LocalDateTime createdAt, Boolean isCanceled) {
+        this.name = name;
+        this.description = description;
         this.venue = venue;
         this.dateTime = dateTime;
-        this.title = title;
-        this.details = details;
-        this.maxCapacity = maxCapacity;
-        this.registeredAttendees = registeredAttendees;
-        this.organizer = organizer;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
+        this.isCanceled = isCanceled;
     }
+
+    public static Event create(String name, String description, String venue,
+                                    LocalDateTime dateTime, Long createdBy) {
+        return new Event(name, description, venue, dateTime, createdBy,
+                        LocalDateTime.now(), false);
+    }
+
 }

@@ -3,16 +3,11 @@ package com.krimo.ticket.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.krimo.ticket.data.Event;
-import com.krimo.ticket.data.TestEntityBuilder;
-import com.krimo.ticket.data.Ticket;
-import com.krimo.ticket.dto.CustomerDTO;
-import com.krimo.ticket.dto.EventList;
-import com.krimo.ticket.dto.ReturnObject;
-import com.krimo.ticket.dto.TicketList;
-import com.krimo.ticket.service.TicketService;
 
-import org.junit.jupiter.api.AfterEach;
+import com.krimo.ticket.data.TicketTest;
+import com.krimo.ticket.dto.TicketDTO;
+import com.krimo.ticket.exception.ApiRequestException;
+import com.krimo.ticket.service.TicketService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +17,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.Collections;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,95 +31,48 @@ class TicketControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    TestEntityBuilder testEntityBuilder = new TestEntityBuilder();
     ObjectMapper objectMapper = new ObjectMapper();
-    ReturnObject returnObject = new ReturnObject();
-    Ticket ticket;
-    CustomerDTO customerDTO;
-    String customerDtoJson;
+    TicketDTO ticketDTO;
+    String dtoJson;
 
     @BeforeEach
     void setUp() {
-        objectMapper.registerModule(new JavaTimeModule());
-
-        ticket = testEntityBuilder.ticket();
-
-        customerDTO = testEntityBuilder.customerDTO();
+        ticketDTO = TicketTest.ticketDTOInit();
 
         try {
-            customerDtoJson = objectMapper.writeValueAsString(customerDTO);
+            objectMapper.registerModule(new JavaTimeModule());
+            dtoJson = objectMapper.writeValueAsString(ticketDTO);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new ApiRequestException("Unable to serialize message.");
         }
     }
 
-    @AfterEach
-    void tearDown() {
-        returnObject = null;
+    @Test
+    void purchaseTicket() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("http://localhost:8082/api/v2/tickets")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(dtoJson)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().is(201));
     }
 
     @Test
-    void buyTicketSuccess() throws Exception {
-
-        returnObject.setTicket(ticket);
-
-        when(ticketService.buyTicket(any(CustomerDTO.class))).thenReturn(returnObject);
-
+    void viewTicket() throws Exception {
+        when(ticketService.viewTicket(anyLong())).thenReturn(ticketDTO);
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("http://localhost:9000/api/v1/ticket")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(customerDtoJson))
+                        .get(String.format("http://localhost:8082/api/v2/tickets/%s", 1)))
                 .andExpect(status().is(200))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.ticketCode").value(ticket.getTicketCode()));
+                .andExpect(jsonPath("$.event_id").value(ticketDTO.getEventId()))
+                .andExpect(jsonPath("$.ticket_code").value(ticketDTO.getTicketCode()));
     }
 
     @Test
-    void buyTicketError() throws Exception{
-
-        returnObject.setErrorMsg("Error message.");
-
-        when(ticketService.buyTicket(any(CustomerDTO.class))).thenReturn(returnObject);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("http://localhost:9000/api/v1/ticket")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(customerDtoJson))
-                .andExpect(status().is(400))
-                .andExpect(content().string("Error message."));
-
-    }
-
-    @Test
-    void allEvents() throws Exception{
-
-        EventList eventList = new EventList(
-                List.of(new Event(ticket.getEventCode(),
-                        Collections.singletonList(ticket))));
-
-        when(ticketService.allEvents()).thenReturn(eventList);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("http://localhost:9000/api/v1/ticket/all")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(200))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    void eventTickets() throws Exception{
-
-        TicketList ticketList = new TicketList(Collections.singletonList(ticket));
-
-        when(ticketService.eventTickets(ticket.getEventCode())).thenReturn(ticketList);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get(String.format("http://localhost:9000/api/v1/ticket/%s", ticket.getEventCode()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(200))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-
+    void cancelPurchase() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .delete(String.format("http://localhost:8082/api/v2/tickets/%s", 1)))
+                .andExpect(status().is(200));
     }
 }
