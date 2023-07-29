@@ -135,7 +135,7 @@ services:
       - tsm
 
   api-gateway:
-    image: gestanestle/api-gateway:v2.0
+    image: gestanestle/api-gateway:2.0.0
     container_name: api-gateway
     links:
       - eureka
@@ -148,7 +148,7 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
 
   eureka:
-    image: gestanestle/eureka:v2.0
+    image: gestanestle/eureka:2.0.0
     container_name: eureka
     networks:
       - tsm
@@ -157,7 +157,7 @@ services:
     restart: always
 
   event:
-    image: gestanestle/event:v2.0
+    image: gestanestle/event:2.0.0
     container_name: event
     ports:
       - "8081:8081"
@@ -180,7 +180,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/event_ticket_db
 
   notification:
-    image: gestanestle/notification:v2.0
+    image: gestanestle/notification:2.0.0
     container_name: notification
     networks:
       - tsm
@@ -196,7 +196,7 @@ services:
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
 
   ticket:
-    image: gestanestle/ticket:v2.0
+    image: gestanestle/ticket:2.0.0
     container_name: ticket
     ports:
       - "8082:8082"
@@ -221,7 +221,7 @@ services:
       start_period: 40s
 
   userprofile:
-    image: gestanestle/userprofile:v2.0
+    image: gestanestle/userprofile:2.0.0
     container_name: userprofile
     ports:
       - "8084:8084"

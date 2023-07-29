@@ -100,7 +100,6 @@ KEYS *
 ```bash
 .
 ├── api-gateway
-│   ├── Dockerfile
 │   ├── pom.xml
 │   ├── src
 │   │   └── main
@@ -121,7 +120,6 @@ KEYS *
 │   └── schema.sql
 ├── docker-compose.yml
 ├── eureka
-│   ├── Dockerfile
 │   ├── pom.xml
 │   ├── src
 │   │   └── main
@@ -137,7 +135,6 @@ KEYS *
 │       ├── eureka.jar
 │       ├── eureka.jar.original
 ├── event
-│   ├── Dockerfile
 │   ├── pom.xml
 │   ├── src
 │   │   ├── main
@@ -197,7 +194,6 @@ KEYS *
 │   └── datasources
 │       └── datasource.yml
 ├── notification
-│   ├── Dockerfile
 │   ├── pom.xml
 │   ├── src
 │   │   ├── main
@@ -240,7 +236,6 @@ KEYS *
 ├── prometheus
 │   └── prometheus.yml
 ├── ticket
-│   ├── Dockerfile
 │   ├── pom.xml
 │   ├── src
 │   │   ├── main
@@ -317,7 +312,6 @@ KEYS *
 │       ├── ticket.jar
 │       └── ticket.jar.original
 └── userprofile
-    ├── Dockerfile
     ├── pom.xml
     ├── src
     │   ├── main
