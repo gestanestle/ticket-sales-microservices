@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.ticket_details (
              section VARCHAR(255) NOT NULL,
              price INTEGER,
              total_stock INTEGER,
+             total_sold INTEGER,
              PRIMARY KEY (event_id, section)
 );
 

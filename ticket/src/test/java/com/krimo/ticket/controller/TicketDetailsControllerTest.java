@@ -57,7 +57,7 @@ public class TicketDetailsControllerTest {
     void setTicketDetails() throws Exception{
 
         mockMvc.perform(MockMvcRequestBuilders
-                    .post(String.format("http://localhost:8082/api/v2/events/%s/ticket-details", 1))
+                    .post(String.format("http://localhost:8082/api/v2/event/%s/ticket-details", 1))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(dtoJson)
                     .characterEncoding(StandardCharsets.UTF_8))
@@ -70,7 +70,7 @@ public class TicketDetailsControllerTest {
         when(ticketDetailsService.getTicketDetailsByEvent(anyLong())).thenReturn(List.of(dto));
 
         mockMvc.perform(MockMvcRequestBuilders
-                    .get(String.format("http://localhost:8082/api/v2/events/%s/ticket-details", 1)))
+                    .get(String.format("http://localhost:8082/api/v2/event/%s/ticket-details", 1)))
                 .andExpect(status().is(200))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].event_id").value(dto.getEventId()))

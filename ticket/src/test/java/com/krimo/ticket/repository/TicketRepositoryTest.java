@@ -2,10 +2,8 @@ package com.krimo.ticket.repository;
 
 import com.krimo.ticket.TicketApplication;
 import com.krimo.ticket.config.PostgresContainerEnv;
-import com.krimo.ticket.data.Ticket;
 import com.krimo.ticket.data.TicketDetails;
 import com.krimo.ticket.data.TicketDetailsTest;
-import com.krimo.ticket.data.TicketTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
@@ -26,8 +25,6 @@ public class TicketRepositoryTest extends PostgresContainerEnv {
 
     @Autowired
     private TicketDetailsRepository ticketDetailsRepository;
-    @Autowired
-    private TicketRepository ticketRepository;
 
     TicketDetails expected;
 
@@ -46,22 +43,4 @@ public class TicketRepositoryTest extends PostgresContainerEnv {
         assertThat(actual.get(0)).usingRecursiveComparison().isEqualTo(expected);
     }
 
-    @Test
-    void getStock() {
-
-        int actual = ticketDetailsRepository.getStock(
-                expected.getPk().getEventId(), expected.getPk().getSection());
-
-        assertThat(actual).isEqualTo(expected.getTotalStock());
-    }
-
-    @Test
-    void getSold() {
-        Ticket ticket = TicketTest.ticketInit();
-        ticketRepository.save(ticket);
-
-        int actual = ticketRepository.getSold(ticket.getEventId(), ticket.getSection());
-
-        assertThat(actual).isEqualTo(1);
-    }
 }

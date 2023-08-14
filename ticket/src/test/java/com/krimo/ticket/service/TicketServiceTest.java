@@ -1,10 +1,7 @@
 package com.krimo.ticket.service;
 
 import com.krimo.ticket.dao.EventDAO;
-import com.krimo.ticket.data.Outbox;
-import com.krimo.ticket.data.Section;
-import com.krimo.ticket.data.Ticket;
-import com.krimo.ticket.data.TicketTest;
+import com.krimo.ticket.data.*;
 import com.krimo.ticket.dto.TicketDTO;
 import com.krimo.ticket.exception.ApiRequestException;
 import com.krimo.ticket.repository.OutboxRepository;
@@ -40,10 +37,12 @@ class TicketServiceTest {
 
     @Captor
     private ArgumentCaptor<Ticket> ticketCaptor;
+    @Captor ArgumentCaptor<TicketDetails> ticketDetailsCaptor;
     @Captor
     private ArgumentCaptor<Outbox> outboxCaptor;
-    TicketDTO ticketDTO;
 
+    TicketDetails ticketDetails;
+    TicketDTO ticketDTO;
     Ticket ticket;
 
     @BeforeEach
@@ -52,6 +51,7 @@ class TicketServiceTest {
                 ticketRepository, ticketDetailsRepository,
                 outboxRepository, eventDAO);
 
+        ticketDetails = TicketDetailsTest.ticketDetailsVIP();
         ticketDTO = TicketTest.ticketDTOInit();
         ticket = TicketTest.ticketInit();
     }
@@ -60,6 +60,7 @@ class TicketServiceTest {
     void purchaseTicketButEventCanceled() {
         String errMsg = "Event has been canceled.";
 
+        when(ticketDetailsRepository.findById(any(TicketDetailsPK.class))).thenReturn(Optional.ofNullable(ticketDetails));
         when(eventDAO.isCanceled(anyLong())).thenReturn(true);
         assertThatThrownBy( () -> ticketService.purchaseTicket(ticketDTO))
                 .isInstanceOf(ApiRequestException.class).hasMessageContaining(errMsg);
@@ -69,12 +70,9 @@ class TicketServiceTest {
     void purchaseTicketButSoldOut() {
         String errMsg = "Sold out.";
 
-        int sold = 10;
-        int stock = 5;
-
+        ticketDetails.setTotalSold(ticketDetails.getTotalStock());
+        when(ticketDetailsRepository.findById(any(TicketDetailsPK.class))).thenReturn(Optional.ofNullable(ticketDetails));
         when(eventDAO.isCanceled(anyLong())).thenReturn(false);
-        when(ticketRepository.getSold(anyLong(), any(Section.class))).thenReturn(sold);
-        when(ticketDetailsRepository.getStock(anyLong(), any(Section.class))).thenReturn(stock);
 
         assertThatThrownBy(() -> ticketService.purchaseTicket(ticketDTO))
                 .isInstanceOf(ApiRequestException.class)
@@ -83,14 +81,10 @@ class TicketServiceTest {
 
     @Test
     void purchaseTicketOK() {
-        int sold = 5;
-        int stock = 10;
         String eventName = "Event 1";
 
-        // passing the negative blocks
+        when(ticketDetailsRepository.findById(any(TicketDetailsPK.class))).thenReturn(Optional.ofNullable(ticketDetails));
         when(eventDAO.isCanceled(anyLong())).thenReturn(false);
-        when(ticketRepository.getSold(anyLong(), any(Section.class))).thenReturn(sold);
-        when(ticketDetailsRepository.getStock(anyLong(), any(Section.class))).thenReturn(stock);
 
         // saving to ticket table
         when(ticketRepository.saveAndFlush(ticketCaptor.capture())).thenReturn(ticket);
@@ -101,6 +95,10 @@ class TicketServiceTest {
         verify(ticketRepository).saveAndFlush(ticketCaptor.capture());
         assertThat(ticketCaptor.getValue()).usingRecursiveComparison()
                 .ignoringFields("id", "ticketCode","purchasedAt").isEqualTo(ticket);
+
+        // incrementing total sold
+        verify(ticketDetailsRepository).save(ticketDetailsCaptor.capture());
+        assertThat(ticketDetailsCaptor.getValue().getTotalSold()).isEqualTo(1);
 
         // saving to outbox table
         verify(outboxRepository).save(outboxCaptor.capture());

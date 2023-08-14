@@ -16,8 +16,9 @@ public class TicketDetails {
     private Integer price;
     @Column(name = "total_stock")
     private Integer totalStock;
-
+    @Column(name = "total_sold")
+    private Integer totalSold;
     public static TicketDetails create(TicketDetailsPK pk, Integer price, Integer totalStock) {
-        return new TicketDetails(pk, price, totalStock);
+        return new TicketDetails(pk, price, totalStock, 0);
     }
 }

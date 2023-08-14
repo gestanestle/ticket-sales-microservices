@@ -1,14 +1,12 @@
 package com.krimo.ticket.service;
 
 
-import com.krimo.ticket.data.Section;
 import com.krimo.ticket.data.TicketDetails;
 import com.krimo.ticket.data.TicketDetailsPK;
 import com.krimo.ticket.data.TicketDetailsTest;
 import com.krimo.ticket.dto.TicketDetailsDTO;
 import com.krimo.ticket.exception.ApiRequestException;
 import com.krimo.ticket.repository.TicketDetailsRepository;
-import com.krimo.ticket.repository.TicketRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,8 +31,6 @@ public class TicketDetailsServiceTest {
 
     @Mock
     private TicketDetailsRepository ticketDetailsRepository;
-    @Mock
-    private TicketRepository ticketRepository;
 
     @InjectMocks
     @Autowired
@@ -50,7 +46,7 @@ public class TicketDetailsServiceTest {
 
     @BeforeEach
     void setUp() {
-        ticketDetailsService = new TicketDetailsServiceImpl(ticketDetailsRepository, ticketRepository);
+        ticketDetailsService = new TicketDetailsServiceImpl(ticketDetailsRepository);
 
         eventId = 1L;
         section = "VIP";
@@ -74,7 +70,6 @@ public class TicketDetailsServiceTest {
     void updateExistingTicketDetails() {
         when(ticketDetailsRepository.findById(any(TicketDetailsPK.class))).thenReturn(Optional.of(ticketDetails));
 
-        when(ticketRepository.getSold(anyLong(), any(Section.class))).thenReturn(0);
         ticketDetailsDTO.setPrice(9999);
 
         ticketDetailsService.setTicketDetails(eventId, ticketDetailsDTO);
@@ -87,9 +82,9 @@ public class TicketDetailsServiceTest {
     void failedUpdateBecauseTicketsSold() {
         String errMsg = "Invalid request. Tickets have already been sold.";
 
+        ticketDetails.setTotalSold(1);
         when(ticketDetailsRepository.findById(any(TicketDetailsPK.class))).thenReturn(Optional.of(ticketDetails));
 
-        when(ticketRepository.getSold(anyLong(), any(Section.class))).thenReturn(1);
         assertThatThrownBy(() -> ticketDetailsService.setTicketDetails(eventId, ticketDetailsDTO))
                 .isInstanceOf(ApiRequestException.class)
                 .hasMessageContaining(errMsg);
@@ -104,6 +99,7 @@ public class TicketDetailsServiceTest {
         List<TicketDetailsDTO> actual = ticketDetailsService.getTicketDetailsByEvent(eventId);
         assertThat(actual.get(0))
                 .usingRecursiveComparison()
+                .ignoringFields("totalSold")
                 .isEqualTo(ticketDetailsDTO);
     }
 

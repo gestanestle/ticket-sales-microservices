@@ -24,7 +24,7 @@ public class Utils {
         return stringBuilder.toString();
     }
 
-    public static String writeTPPayloadToJson(TicketPurchasePayload input) {
+    public static String writeToJson(TicketPurchasePayload input) {
         String res;
         try {
             res = OBJECT_MAPPER.writeValueAsString(input);
