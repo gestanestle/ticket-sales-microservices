@@ -12,7 +12,7 @@
     <modules>
         <module>api-gateway</module>
         <module>eureka</module>
-        <module>event</module>
+        <module>event-command</module>
         <module>ticket</module>
         <module>userprofile</module>
         <module>notification</module>
