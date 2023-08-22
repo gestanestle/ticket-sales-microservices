@@ -11,16 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public interface TicketDetailsService {
-
     void setTicketDetails(Long eventId, TicketDetailsDTO ticketDetailsDTO);
-
     List<TicketDetailsDTO> getTicketDetailsByEvent(Long eventId);
-
-
 }
 
 @Service
@@ -52,12 +48,10 @@ class TicketDetailsServiceImpl implements TicketDetailsService {
         else {
             ticketDetails = ticketDetailsRepository.findById(pk).orElseThrow();
 
-            if (ticketDetails.getTotalSold() != 0) {
-                throw new ApiRequestException("Invalid request. Tickets have already been sold.");
-            }
+            if (ticketDetails.getTotalSold() != 0) throw new ApiRequestException("Invalid request. Tickets have already been sold.");
 
-            if (ticketDetailsDTO.getPrice() != null) { ticketDetails.setPrice(ticketDetailsDTO.getPrice()); }
-            if (ticketDetailsDTO.getTotalStock() != null) { ticketDetails.setTotalStock(ticketDetailsDTO.getTotalStock()); }
+            if (ticketDetailsDTO.getPrice() != null) ticketDetails.setPrice(ticketDetailsDTO.getPrice());
+            if (ticketDetailsDTO.getTotalStock() != null) ticketDetails.setTotalStock(ticketDetailsDTO.getTotalStock());
         }
 
         ticketDetailsRepository.save(ticketDetails);
@@ -65,11 +59,8 @@ class TicketDetailsServiceImpl implements TicketDetailsService {
 
     @Override
     public List<TicketDetailsDTO> getTicketDetailsByEvent(Long eventId) {
-        List<TicketDetailsDTO> ticketDetailsDTOList = new ArrayList<>();
-        ticketDetailsRepository.getTicketDetailsByEvent(eventId)
-                .forEach(ticketDetails -> ticketDetailsDTOList.add(mapToTicketDetailsDTO(ticketDetails)));
-
-        return ticketDetailsDTOList;
+        return ticketDetailsRepository.getTicketDetailsByEvent(eventId)
+                .stream().map(this::mapToTicketDetailsDTO).collect(Collectors.toList());
     }
 
     // Reusable method - entity to dto mapping

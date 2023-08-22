@@ -32,7 +32,7 @@ class EventDAOImpl implements EventDAO {
 
         List<String> result = jdbcTemplate.query(sql, parameters, (rs, rowNum) -> rs.getString("event_name"));
 
-        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+        return Optional.ofNullable(result.get(0));
     }
 
     @Override

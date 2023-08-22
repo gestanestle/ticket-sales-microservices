@@ -44,20 +44,20 @@ class UserProfileServiceImpl implements UserProfileService {
     public void updateUserProfile(Long id, UserProfileDTO dto) {
         UserProfile userProfile = userProfileRepository.findById(id).orElseThrow();
 
-        if (dto.getEmail() != null) { userProfile.setEmail(dto.getEmail()); }
-        if (dto.getPhone() != null) { userProfile.setPhone(dto.getPhone()); }
-        if (dto.getLastName() != null) { userProfile.setLastName(dto.getLastName()); }
-        if (dto.getFirstName() != null) { userProfile.setFirstName(dto.getFirstName()); }
-        if (dto.getBirthDate() != null) { userProfile.setBirthDate(dto.getBirthDate()); }
+        if (dto.getEmail() != null) userProfile.setEmail(dto.getEmail());
+        if (dto.getPhone() != null) userProfile.setPhone(dto.getPhone());
+        if (dto.getLastName() != null) userProfile.setLastName(dto.getLastName());
+        if (dto.getFirstName() != null) userProfile.setFirstName(dto.getFirstName());
+        if (dto.getBirthDate() != null) userProfile.setBirthDate(dto.getBirthDate());
 
         userProfileRepository.save(userProfile);
      }
 
     @Override
     public UserProfileDTO getUserProfile(Long id) {
-        UserProfile userProfile = userProfileRepository.findById(id).orElseThrow();
-        return mapToDTO(userProfile);
+        return mapToDTO(userProfileRepository.findById(id).orElseThrow());
     }
+
 
     @Override
     public List<UserProfileDTO> getUserProfiles() {

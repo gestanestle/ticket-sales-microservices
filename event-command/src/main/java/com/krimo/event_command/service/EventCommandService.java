@@ -6,9 +6,6 @@ import com.krimo.event_command.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 public interface EventCommandService {
 
     Long createEvent(EventDTO eventDTO);
@@ -40,10 +37,10 @@ class EventCommandServiceImpl implements EventCommandService {
 
         Event event = eventRepository.findById(id).orElseThrow();
 
-        if (eventDTO.getVenue() != null) { event.setVenue(eventDTO.getVenue()); }
-        if (eventDTO.getDescription() != null) { event.setDescription(eventDTO.getDescription()); }
-        if (eventDTO.getDateTime()!= null) { event.setDateTime(eventDTO.getDateTime()); }
-        if (eventDTO.getIsCanceled()!= null) { event.setIsCanceled(eventDTO.getIsCanceled()); }
+        if (eventDTO.getVenue() != null) event.setVenue(eventDTO.getVenue());
+        if (eventDTO.getDescription() != null) event.setDescription(eventDTO.getDescription());
+        if (eventDTO.getDateTime()!= null) event.setDateTime(eventDTO.getDateTime());
+        if (eventDTO.getIsCanceled()!= null) event.setIsCanceled(eventDTO.getIsCanceled());
 
         eventRepository.save(event);
     }

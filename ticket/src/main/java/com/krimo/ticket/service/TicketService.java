@@ -42,13 +42,13 @@ class TicketServiceImpl implements TicketService {
         TicketDetails ticketDetails = ticketDetailsRepository.findById(TicketDetailsPK.of(eventId, section)).orElseThrow();
 
         // 1. Check if event is canceled
-        if (eventDAO.isCanceled(eventId)) { throw new ApiRequestException("Event has been canceled."); }
+        if (eventDAO.isCanceled(eventId)) throw new ApiRequestException("Event has been canceled.");
 
         // 2. Check if sold out
         int sold = ticketDetails.getTotalSold();
         final int stock = ticketDetails.getTotalStock();
 
-        if (sold >= stock) { throw new ApiRequestException("Sold out."); }
+        if (sold >= stock) throw new ApiRequestException("Sold out.");
 
         // If event not canceled and ticket not sold out,
 
