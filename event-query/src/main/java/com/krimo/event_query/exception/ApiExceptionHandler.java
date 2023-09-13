@@ -1,4 +1,4 @@
-package com.krimo.event_command.exception;
+package com.krimo.event_query.exception;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

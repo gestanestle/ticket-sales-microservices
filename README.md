@@ -83,7 +83,7 @@ For Ticket Service, it will be as follows: </br>
 ### Managing the records
 You can check the roles and schema present in the database with the command provided below. The password is [ postgres ].
 ```
-sudo psql -h localhost -p 5432 -U postgres
+docker exec -ti postgres psql -h localhost -p 5432 -U postgres
 ```
 Upon ticket purchase, you can listen to the kafka topic and check the messages by entering these in the terminal:
 ```
@@ -115,7 +115,7 @@ KEYS *
 │       ├── api-gateway.jar
 │       ├── api-gateway.jar.original
 ├── connectors
-│   └── debezium.json
+│   └── cdc-outbox.json
 ├── db-init-scripts
 │   └── schema.sql
 ├── docker-compose.yml

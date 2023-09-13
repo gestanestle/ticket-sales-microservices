@@ -26,5 +26,11 @@ public class EventCommandController {
         eventCommandService.updateEvent(eventId, eventDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+    
+    @DeleteMapping(path = "{eventId}")
+    public ResponseEntity<Object> deleteEvent(@PathVariable("eventId") Long eventId) {
+        eventCommandService.deleteEvent(eventId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 }

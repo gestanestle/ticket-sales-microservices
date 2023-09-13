@@ -12,9 +12,9 @@
     </parent>
 
     <artifactId>event-command</artifactId>
-    <version>2.0.0</version>
-    <name>event</name>
-    <description>Event Service</description>
+    <version>2.1.0</version>
+    <name>event-command</name>
+    <description>Event Command Service</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -77,7 +77,7 @@
     </dependencies>
 
     <build>
-        <finalName>event</finalName>
+        <finalName>event-command</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

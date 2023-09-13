@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: event-indexer
+
+  # Kafka
+  kafka:
+    bootstrap-servers: '[::1]:9092'
+    consumer:
+      auto-offset-reset: earliest
+
+# ES config
+elasticsearch:
+  server: http://localhost:9200
+  user: event_indexer
+  pass: elastic
+
+# Eureka
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+# Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  health:
+    elasticsearch:
+      enabled: false
