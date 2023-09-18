@@ -10,7 +10,8 @@ spring:
 
 # ES config
 elasticsearch:
-  server: http://localhost:9200
+  hostname: localhost
+  server: http://${elasticsearch.hostname}:9200
   user: event_indexer
   pass: elastic
 
@@ -20,7 +21,17 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+
+# Server configuration
+server:
+  port: 8086
+  error:
+    include-binding-errors: always
+    include-message: always
 
 # Monitoring
 management:
@@ -34,3 +45,11 @@ management:
   health:
     elasticsearch:
       enabled: false
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org:
+      springframework: info

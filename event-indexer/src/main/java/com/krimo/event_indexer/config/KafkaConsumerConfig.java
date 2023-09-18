@@ -1,4 +1,4 @@
-package com.example.event_indexer.config;
+package com.krimo.event_indexer.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;

@@ -1,4 +1,4 @@
-package com.example.event_indexer.config;
+package com.krimo.event_indexer.config;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;

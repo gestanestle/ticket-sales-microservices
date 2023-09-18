@@ -1,4 +1,4 @@
-package com.example.event_indexer.payload;
+package com.krimo.event_indexer.payload;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

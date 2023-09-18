@@ -4,7 +4,8 @@ spring:
 
 # ES Config
 elasticsearch:
-  server: http://localhost:9200
+  hostname: localhost
+  server: http://${elasticsearch.hostname}:9200
   user: event_query
   pass: elastic
 
@@ -17,16 +18,19 @@ server:
 
 # Eureka
 eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka
 
 # API Docs
 springdoc:
   api-docs:
-    path: /api/v2/events/api-docs
+    path: /api/v2/event-query/api-docs
 
 # Monitoring
 management:

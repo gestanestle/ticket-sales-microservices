@@ -9,6 +9,6 @@ public class EventQueryAppConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/api/v2/events/swagger/ui").setViewName("forward:/index.html");
+        registry.addViewController("/api/v2/event-query/swagger/ui").setViewName("forward:/index.html");
     }
 }

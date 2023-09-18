@@ -3,22 +3,37 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      discovery:
+        locator:
+          lower-case-service-id: true
+          enabled: true
       routes:
         - id: eureka
-          uri: lb://EUREKA:8761
+          uri: http://${eureka.instance.hostname}:8761
           predicates:
           - Path=/eureka/web
           filters:
           - SetPath=/
         - id: eureka-static
-          uri: lb://EUREKA:8761
+          uri: http://${eureka.instance.hostname}:8761
           predicates:
           - Path=/eureka/**
 
-        - id: event
-          uri: lb://EVENT
+        - id: event-query
+          uri: lb://EVENT-QUERY
+          predicates:
+          - Path=/api/v2/events/**, /api/v2/event-query/**
+          - Method=GET
+        - id: event-command
+          uri: lb://EVENT-COMMAND
           predicates:
           - Path=/api/v2/events/**
+          - Method=POST, PUT, PATCH, DELETE
+        - id: event-command-swagger
+          uri: lb://EVENT-COMMAND
+          predicates:
+          - Path=/api/v2/event-command/**
+          - Method=GET
         - id: ticket
           uri: lb://TICKET
           predicates:
@@ -27,27 +42,6 @@ spring:
           uri: lb://USERPROFILE
           predicates:
           - Path=/api/v2/user-profiles/**
-
-#        SWAGGER
-        - id: swagger-ui-event
-          uri: lb://EVENT/api/v2/events/swagger/ui
-          predicates:
-            - Path=/swagger-ui/**,/swagger-resources/**,/swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
-          filters:
-            - RewritePath=/api/v2/events/(?<path>.*), /$\{path}
-        - id: swagger-ui-ticket
-          uri: lb://TICKET/api/v2/tickets/swagger/ui
-          predicates:
-            - Path=/swagger-ui/**,/swagger-resources/**, /swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
-          filters:
-            - RewritePath=/api/v2/tickets/(?<path>.*), /$\{path}
-        - id: swagger-ui-user-profile
-          uri: lb://USERPROFILE/api/v2/user-profiles/swagger/ui
-          predicates:
-            - Path=/swagger-ui/**,/swagger-resources/**, /swagger-ui.html, /v2/api-docs,/webjars/**,/view/**
-          filters:
-            - RewritePath=/api/v2/user-profiles/(?<path>.*), /$\{path}
-
 
 # Logger configuration
 logging:
@@ -65,11 +59,14 @@ server:
     include-message: always
 
 eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka
 
 # Monitoring
 management:

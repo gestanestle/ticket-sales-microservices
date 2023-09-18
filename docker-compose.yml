@@ -9,7 +9,7 @@ services:
       - "5432:5432"
     restart: always
     volumes:
-      - ./db-init-scripts:/docker-entrypoint-initdb.d
+      - ./postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -29,8 +29,6 @@ services:
     restart: always
     ports:
       - "2181:2181"
-      - "2888:2888"
-      - "3888:3888"
     networks:
       - tsm
 
@@ -38,6 +36,8 @@ services:
     restart: always
     container_name: kafka
     image: confluentinc/cp-kafka:7.4.0
+    ports:
+      - "9092:9092"
     depends_on:
       - zookeeper
     healthcheck:
@@ -47,8 +47,6 @@ services:
       timeout: 10s
       retries: 10
     hostname: kafka
-    ports:
-      - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -81,59 +79,59 @@ services:
     networks:
       - tsm
 
-  #  redis:
-#    image: redis:7
-#    container_name: redis
-#    ports:
-#      - "6379:6379"
-#    networks:
-#      - tsm
-#
-#  prometheus:
-#    image: prom/prometheus:v2.45.0
-#    container_name: prometheus
-#    command:
-#      - '--config.file=/etc/prometheus/prometheus.yml'
-#    ports:
-#      - "9090:9090"
-#    restart: on-failure
-#    volumes:
-#      - ./prometheus:/etc/prometheus/
-#      - prometheus_data:/prometheus
-#    networks:
-#      - tsm
-#
-#  grafana:
-#    image: grafana/grafana:10.0.2
-#    container_name: grafana
-#    ports:
-#      - "3000:3000"
-#    depends_on:
-#      - prometheus
-#    restart: always
-#    environment:
-#      - GF_SECURITY_ADMIN_USER=admin
-#      - GF_SECURITY_ADMIN_PASSWORD=grafana
-#    volumes:
-#      - ./grafana:/etc/grafana/provisioning/
-#      -  grafana_data:/var/lib/grafana
-#    networks:
-#      - tsm
-#
-#  postgres-exporter:
-#    container_name: postgres-exporter
-#    image: wrouesnel/postgres_exporter:v0.8.0
-#    environment:
-#      - DATA_SOURCE_NAME=postgresql://postgres:postgres:5432/?sslmode=disable
-#      - DATA_SOURCE_USER=postgres
-#      - DATA_SOURCE_PASS=postgres
-#    depends_on:
-#      - postgres
-#    restart: always
-#    ports:
-#      - "9187:9187"
-#    networks:
-#      - tsm
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - tsm
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: on-failure
+    volumes:
+      - ./prometheus:/etc/prometheus/
+      - prometheus_data:/prometheus
+    networks:
+      - tsm
+
+  grafana:
+    image: grafana/grafana:10.0.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/
+      -  grafana_data:/var/lib/grafana
+    networks:
+      - tsm
+
+  postgres-exporter:
+    container_name: postgres-exporter
+    image: wrouesnel/postgres_exporter:v0.8.0
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres:5432/?sslmode=disable
+      - DATA_SOURCE_USER=postgres
+      - DATA_SOURCE_PASS=postgres
+    depends_on:
+      - postgres
+    restart: always
+    ports:
+      - "9187:9187"
+    networks:
+      - tsm
 
   elasticsearch:
     image: elastic/elasticsearch:8.9.1
@@ -141,7 +139,6 @@ services:
     restart: always
     ports:
       - '9200:9200'
-      - '9300:9300'
     environment:
       discovery.type: single-node
       ES_JAVA_OPTS: -Xmx512m -Xms512m
@@ -149,148 +146,167 @@ services:
       cluster.name: elasticsearch
       xpack.security.transport.ssl.enabled: false
       xpack.security.http.ssl.enabled: false
+      ELASTIC_PASSWORD: password
     volumes:
       - ./elastic/data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: "curl -s http://elasticsearch:9200 >/dev/null || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 50
+
     networks:
       - tsm
 
+  api-gateway:
+    image: gestanestle/api-gateway:2.0.0
+    container_name: api-gateway
+    links:
+      - eureka
+    restart: always
+    ports:
+      - "9000:9000"
+    networks:
+      - tsm
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=eureka
 
+  eureka:
+    image: gestanestle/eureka:2.0.0
+    container_name: eureka
+    networks:
+      - tsm
+    ports:
+      - "8761:8761"
+    restart: always
 
-#  kibana:
-#    image: elastic/kibana:8.9.1
-#    container_name: kibana
-#    restart: always
-#    ports:
-#      - '5601:5601'
-#      - '9600:9600'
-#    environment:
-#      SERVERNAME: kibana
-#      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-#      ELASTICSEARCH_USERNAME: elastic
-#      ELASTICSEARCH_PASSWORD: i5U4owCsIld0CLFL2mPe
-#      ES_JAVA_OPTS: -Xmx512m -Xms512m
-#    networks:
-#      - tsm
-#    depends_on:
-#      - elasticsearch
+  event-command:
+    image: gestanestle/event-command:2.1.0
+    container_name: event-command
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: "curl --fail --silent localhost:8081/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=eureka
+      - POSTGRES_HOSTNAME=postgres
 
-#  api-gateway:
-#    image: gestanestle/api-gateway:2.0.0
-#    container_name: api-gateway
-#    links:
-#      - eureka
-#    restart: always
-#    ports:
-#      - "9000:9000"
-#    networks:
-#      - tsm
-#    environment:
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
-#
-#  eureka:
-#    image: gestanestle/eureka:2.0.0
-#    container_name: eureka
-#    networks:
-#      - tsm
-#    ports:
-#      - "8761:8761"
-#    restart: always
-#
-#  event:
-#    image: gestanestle/event:2.0.0
-#    container_name: event
-#    ports:
-#      - "8081:8081"
-#    healthcheck:
-#      test: "curl --fail --silent localhost:8081/actuator/health | grep UP || exit 1"
-#      interval: 20s
-#      timeout: 5s
-#      retries: 5
-#      start_period: 40s
-#    networks:
-#      - tsm
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#    links:
-#      - eureka
-#    restart: always
-#    environment:
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
-#      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/event_ticket_db
+  event-indexer:
+    image: gestanestle/event-indexer:2.1.0
+    container_name: event-indexer
+    networks:
+      - tsm
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=eureka
+      - ELASTICSEARCH_HOSTNAME=elasticsearch
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
 
-#  notification:
-#    image: gestanestle/notification:2.0.0
-#    container_name: notification
-#    networks:
-#      - tsm
-#    depends_on:
-#      - kafka
-#      - redis
-#    links:
-#      - eureka
-#    restart: always
-#    environment:
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
-#      - SPRING_REDIS_HOST=redis
-#      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
-#
-#  ticket:
-#    image: gestanestle/ticket:2.0.1
-#    container_name: ticket
-#    ports:
-#      - "8082:8082"
-#    networks:
-#      - tsm
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#      event:
-#        condition: service_healthy
-#    links:
-#      - eureka
-#    restart: always
-#    environment:
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
-#      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/event_ticket_db
-#    healthcheck:
-#      test: "curl --fail --silent localhost:8082/actuator/health | grep UP || exit 1"
-#      interval: 20s
-#      timeout: 5s
-#      retries: 5
-#      start_period: 40s
-#
-#  userprofile:
-#    image: gestanestle/userprofile:2.0.0
-#    container_name: userprofile
-#    ports:
-#      - "8084:8084"
-#    networks:
-#      - tsm
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
-#    links:
-#      - eureka
-#    restart: always
-#    environment:
-#      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
-#      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/userprofile_db
-#    healthcheck:
-#      test: "curl --fail --silent localhost:8084/actuator/health | grep UP || exit 1"
-#      interval: 20s
-#      timeout: 5s
-#      retries: 5
-#      start_period: 40s
-#
+  event-query:
+    image: gestanestle/event-query:2.1.0
+    container_name: event-query
+    ports:
+      - "8080:8080"
+    networks:
+      - tsm
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=eureka
+      - ELASTICSEARCH_HOSTNAME=elasticsearch
+
+  notification:
+    image: gestanestle/notification:2.0.0
+    container_name: notification
+    networks:
+      - tsm
+    depends_on:
+      - kafka
+      - redis
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=eureka
+      - SPRING_REDIS_HOST=redis
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
+
+  ticket:
+    image: gestanestle/ticket:2.0.1
+    container_name: ticket
+    ports:
+      - "8082:8082"
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+      event-command:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=eureka
+      - POSTGRES_HOSTNAME=postgres
+    healthcheck:
+      test: "curl --fail --silent localhost:8082/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  userprofile:
+    image: gestanestle/userprofile:2.0.0
+    container_name: userprofile
+    ports:
+      - "8084:8084"
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=eureka
+      - POSTGRES_HOSTNAME=postgres
+    healthcheck:
+      test: "curl --fail --silent localhost:8084/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
 networks:
   tsm:
     name: tsm
-#
-#volumes:
-#  prometheus_data:
-#  grafana_data:
 
-# curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/cdc-outbox.json
+volumes:
+  prometheus_data:
+  grafana_data:
+
 # curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/cdc-event.json
-# curl -X POST localhost:8089/connectors -H "Content-Type: application/json" -d @./connectors/elastic-sink.json
+# curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/cdc-outbox.json
