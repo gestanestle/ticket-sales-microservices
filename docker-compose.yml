@@ -10,6 +10,7 @@ services:
     restart: always
     volumes:
       - ./postgres/init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -148,7 +149,7 @@ services:
       xpack.security.http.ssl.enabled: false
       ELASTIC_PASSWORD: password
     volumes:
-      - ./elastic/data:/usr/share/elasticsearch/data
+      - elastic_data:/usr/share/elasticsearch/data
     healthcheck:
       test: "curl -s http://elasticsearch:9200 >/dev/null || exit 1"
       interval: 30s
@@ -305,8 +306,7 @@ networks:
     name: tsm
 
 volumes:
+  postgres_data:
+  elastic_data:
   prometheus_data:
   grafana_data:
-
-# curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/cdc-event.json
-# curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/cdc-outbox.json

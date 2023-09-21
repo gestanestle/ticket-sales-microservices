@@ -57,15 +57,22 @@ Navigate to the root directory and start the containers.
 ```
 docker compose up -d
 ```
-Before anything else, Debezium has to be configured properly, otherwise no payload is going to be published to the message broker. The JSON file is already provided in the directory [./connectors] and must only be sent to the service itself through POST request. Copy the command below and paste it in the terminal.
+
+Upon verifying that the containers are up and running, run the shell script that does the following:
+* Creates an index ```events``` in elasticsearch
+* Creates separate roles with read and write privileges
+* Creates users for ```Event Indexer``` and ```Event Query``` with their corresponding roles
+* Registers the debezium/kafka connectors for change data capture
+
 ```
-curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/debezium.json
+./start.sh
 ```
 
 ### Service dependency to be considered
-The properties [ created by ] in Event Service and [ purchased by ] in Ticket Service refer to the auto-generated User ID in User Profile. To be able to organize events and purchase tickets, the user has to be present in the database first. Create a profile with the necessary fields in the URL given below. To learn more, see API Documentation.
+The properties [ created by ] in Event Service and [ purchased by ] in Ticket Service refer to the auto-generated User ID in User Profile. 
+To be able to organize events and purchase tickets, the user has to be present in the database first. Create a profile with the necessary fields in the URL given below. To learn more, see API Documentation.
 ```
-http://localhost:9000/api-v2-user-profiles
+http://localhost:9000/api/v2/user-profiles
 ```
 > _Due to the absence of a proper Auth Service, this application assumes that any email addresses provided by the users are verified. When creating events and purchasing tickets, **proceed with caution**._
 
@@ -73,7 +80,8 @@ http://localhost:9000/api-v2-user-profiles
 The services User Profile, Event, and Ticket have their own OpenAPI specifications. To access the API Docs, go to the following URLs:
 ```
 http://localhost:9000/api/v2/user-profiles/swagger/ui
-http://localhost:9000/api/v2/events/swagger/ui
+http://localhost:9000/api/v2/event-command/swagger/ui
+http://localhost:9000/api/v2/event-query/swagger/ui
 http://localhost:9000/api/v2/tickets/swagger/ui
 ```
 For Ticket Service, it will be as follows: </br>
