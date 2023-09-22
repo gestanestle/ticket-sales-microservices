@@ -182,7 +182,7 @@ services:
     restart: always
 
   event-command:
-    image: gestanestle/event-command:2.1.0
+    image: gestanestle/event-command:3.0.0
     container_name: event-command
     ports:
       - "8081:8081"
@@ -205,7 +205,7 @@ services:
       - POSTGRES_HOSTNAME=postgres
 
   event-indexer:
-    image: gestanestle/event-indexer:2.1.0
+    image: gestanestle/event-indexer:3.0.0
     container_name: event-indexer
     networks:
       - tsm
@@ -221,7 +221,7 @@ services:
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
 
   event-query:
-    image: gestanestle/event-query:2.1.0
+    image: gestanestle/event-query:3.0.0
     container_name: event-query
     ports:
       - "8080:8080"

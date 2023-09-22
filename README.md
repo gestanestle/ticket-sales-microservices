@@ -1,4 +1,4 @@
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white) ![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-000?style=for-the-badge&logo=apachekafka) ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=Prometheus&logoColor=white) ![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white)
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white) ![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-000?style=for-the-badge&logo=apachekafka) ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white) ![ElasticSearch](https://img.shields.io/badge/-ElasticSearch-005571?style=for-the-badge&logo=elasticsearch) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=Prometheus&logoColor=white) ![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white) 
 
 # TICKET SALES MICROSERVICES
 _Organize events and purchase tickets from different services._
@@ -11,11 +11,12 @@ _Organize events and purchase tickets from different services._
 ### Technologies
 Ticket Sales Microservices uses a number of tools and frameworks to work properly:
 
-- Java, PostgreSQL, Redis
+- Java, PostgreSQL, Redis, Elasticsearch
 - Spring Boot - Web, Actuator
 - Spring Cloud - Feign Client, Eureka Server/Client, API Gateway
 - Spring Data JPA, Spring JDBC, Flyway
 - Spring Data Redis, Jedis
+- Java API Client for Elasticsearch
 - JUnit, Mockito, MockMVC, Test Containers
 - Java Mail Sender, Gmail SMTP
 - Apache Kafka, Zookeeper
@@ -27,29 +28,71 @@ Ticket Sales Microservices uses a number of tools and frameworks to work properl
 
 ## THE ARCHITECTURE
 
-![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/c0bbc482-4fe7-4cb6-baa2-6ad30b342935)
+![image](./static/system_design.JPG)
 
-### Event-Driven and CDC
-This ticket sales system is based on event-driven architecture. It implements the Outbox Pattern with CDC, through the use of Debezium, to capture data change from PostgreSQL and publish  the records to Apache Kafka. On the other hand, the consumer subscribes to the topic and caches the broker message to Redis. For our use-case, the producer is the Ticket Service, while the consumer is the Notification Service. The event is "ticket purchase"; the post-event is the confirmation email. </br>
+Ticket Sales Microservices is a backend system that lets you:
+* Create, update, and delete events
+* Set ticket details for the created events
+* Search and purchase ticket for events
 
-This is the sequence diagram of such event: 
+_A fairly simple application in a distributed architecture._
 
-![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/4ae80209-1750-4c6c-8774-44362f25b49f)
+### Event-Driven and Change Data Capture
+
+This ticket sales system is based on event-driven paradigm, utilizing Apache Kafka as the message broker. 
+It is not the applications themselves that directly publish the records to Kafka but Debezium - 
+a third party CDC tool that captures row-level changes in our source database (PostgreSQL). 
+It guarantees at-least once delivery semantics for every message.
+
+**Debezium + Kafka act as a streaming pipeline to pass data to other services.** <br>
+<br>
+In our microservices, this pipeline is being used for two distinct purposes:  
+* To sync the data between read and write models for entity ```Event``` 
+* To send the appropriate data needed to process notifications upon ```Ticket``` Purchase
+
+> _Note that ```Event``` here refers to the aggregate root - the main entity this entire system 
+> cannot live without. This must not be confused with the term **domain events**._
+
+### Command and Query Responsibility Segregation
+
+Commands and queries for ```Event``` are separated. Addition of new ```Event```, modification, and deletion
+are done through ```Event Command```. On the other hand, querying events - searching per keyword and getting per ID -
+can only be done through ```Event Query```.
+
+Elasticsearch, a distributed search engine, is used to create a highly available read model with 
+Full-Text Search capabilities. The write model is PostgreSQL, a relational database with transactional properties.
+Debezium captures every row-level change in ```event``` table and publishes it to the topic ```event_ticket_db.public.event``` 
+in Kafka. ```Event Indexer``` listens to the topic and inserts the records to the appropriate index in Elasticsearch. 
+
+### The Outbox Pattern
+
+Accommodating ticket purchase requests is decoupled from sending out notifications to the users upon successful ticket purchases.
+The application ```Ticket``` does the former while ```Notification``` does the latter. Saving the users' details to the ```outbox``` table
+is part of the entire unit of work done against the database. Debezium captures every change in ```outbox``` table and publishes it
+to the topic ```outbox.event.ticket_purchase```. ```Notification``` subscribes to it and caches the messages to Redis. 
+The sequence diagram is given below.
+
+![image](./static/ticket_purchase.jpg)
 
 ### Shared Database
-Event Management and Ticket Sales are the two main contexts of this application. These services share some data needed to be able to operate successfully. It follows a microservices pattern called 'shared database', with whose objects are set with fine-grained access privileges accordingly.
+Event Management and Ticket Sales are the two main contexts of this application. Services ```Event Command``` and ```Ticket``` share 
+some data needed to be able to operate successfully. It follows a microservices pattern called 'shared database', 
+with whose objects are set with fine-grained access privileges accordingly.
 
 ### Database Migration
-While the API layer used for Hibernate are Spring Data JPA and Spring JDBC, the DDL, unlike the previous version, is set to 'update'. The schema creation, versioning, and migrations are all managed by Flyway.
+While the API layer used for Hibernate are Spring Data JPA and Spring JDBC, the DDL, unlike the previous version, is set to 'update'. 
+The schema creation, versioning, and migrations are all managed by Flyway.
 
 ### Testing
 The services Event, Ticket , and Notification are unit-tested with JUnit, Mockito, and MockMVC, and DB-integration tested with Test Containers.
 
 ### Monitoring
 
-![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/96b39b52-4433-4aa5-a86a-e528cb2d0653)
+![image](./static/grafana.png)
 
-Spring Boot Actuator exposes the metrics of each services, including the API Gateway and Discovery Server, while a third-party exporter exposes the metrics of the database. Prometheus scrapes these, serving as datasources to Grafana, which then visualizes the data in the dashboards. The endpoints are accessible through ports 9090 and 3000, respectively.
+Spring Boot Actuator exposes the metrics of each services, including the API Gateway and Discovery Server, while a 
+third-party exporter exposes the metrics of the database. Prometheus scrapes these, serving as data sources to Grafana, 
+which then visualizes the data in the dashboards. The endpoints are accessible through ports 9090 and 3000, respectively.
 
 ## RUNNING THE APPLICATIONS
 
@@ -69,296 +112,193 @@ Upon verifying that the containers are up and running, run the shell script that
 ```
 
 ### Service dependency to be considered
-The properties [ created by ] in Event Service and [ purchased by ] in Ticket Service refer to the auto-generated User ID in User Profile. 
-To be able to organize events and purchase tickets, the user has to be present in the database first. Create a profile with the necessary fields in the URL given below. To learn more, see API Documentation.
+The properties [ ```created by``` ] in Event Service and [ ```purchased by``` ] in Ticket Service refer to the auto-generated 
+User ID in ```User Profile```. To be able to organize events and purchase tickets, the user has to be present in the database 
+first. Create a profile with the necessary fields in the URL given below. To learn more, see API Documentation.
 ```
-http://localhost:9000/api/v2/user-profiles
+http://localhost:9000/api/v2/user-profiles 
 ```
+
 > _Due to the absence of a proper Auth Service, this application assumes that any email addresses provided by the users are verified. When creating events and purchasing tickets, **proceed with caution**._
 
 ### API Documentation
 The services User Profile, Event, and Ticket have their own OpenAPI specifications. To access the API Docs, go to the following URLs:
+
 ```
 http://localhost:9000/api/v2/user-profiles/swagger/ui
+```
+```
 http://localhost:9000/api/v2/event-command/swagger/ui
+```
+```
 http://localhost:9000/api/v2/event-query/swagger/ui
+```
+```
 http://localhost:9000/api/v2/tickets/swagger/ui
 ```
+
 For Ticket Service, it will be as follows: </br>
 
-![image](https://github.com/gestanestle/ticket-sales-microservices/assets/83026862/6f3949b5-b6c0-421b-96f5-19a139a3fef8)
+![image](./static/swagger.JPG)
 
-### Managing the records
-You can check the roles and schema present in the database with the command provided below. The password is [ postgres ].
-```
-docker exec -ti postgres psql -h localhost -p 5432 -U postgres
-```
-Upon ticket purchase, you can listen to the kafka topic and check the messages by entering these in the terminal:
-```
-docker exec -ti kafka bash
-kafka-console-consumer --topic outbox.event.ticket_purchase --bootstrap-server kafka:29092 --from-beginning
-```
-Check if the notification service properly saves the messages in Redis with:
-```
-docker exec -ti redis redis-cli
-KEYS *
-```
 
 ## Project Tree
 ```bash
 .
-├── api-gateway
-│   ├── pom.xml
-│   ├── src
-│   │   └── main
-│   │       ├── java
-│   │       │   └── com
-│   │       │       └── krimo
-│   │       │           └── gateway
-│   │       │               └── ApiGatewayApplication.java
-│   │       └── resources
-│   │           ├── application.yml
-│   │           └── banner.txt
-│   └── target
-│       ├── api-gateway.jar
-│       ├── api-gateway.jar.original
-├── connectors
-│   └── cdc-outbox.json
-├── db-init-scripts
-│   └── schema.sql
-├── docker-compose.yml
-├── eureka
-│   ├── pom.xml
-│   ├── src
-│   │   └── main
-│   │       ├── java
-│   │       │   └── com
-│   │       │       └── krimo
-│   │       │           └── eureka
-│   │       │               └── EurekaApplication.java
-│   │       └── resources
-│   │           ├── application.yml
-│   │           └── banner.txt
-│   └── target
-│       ├── eureka.jar
-│       ├── eureka.jar.original
-├── event
-│   ├── pom.xml
-│   ├── src
-│   │   ├── main
-│   │   │   ├── java
-│   │   │   │   └── com
-│   │   │   │       └── krimo
-│   │   │   │           └── event
-│   │   │   │               ├── config
-│   │   │   │               │   └── EventAppConfig.java
-│   │   │   │               ├── controller
-│   │   │   │               │   └── EventController.java
-│   │   │   │               ├── data
-│   │   │   │               │   ├── Event.java
-│   │   │   │               │   └── Section.java
-│   │   │   │               ├── dto
-│   │   │   │               │   └── EventDTO.java
-│   │   │   │               ├── EventApplication.java
-│   │   │   │               ├── exception
-│   │   │   │               │   ├── ApiExceptionHandler.java
-│   │   │   │               │   ├── ApiException.java
-│   │   │   │               │   └── ApiRequestException.java
-│   │   │   │               ├── repository
-│   │   │   │               │   └── EventRepository.java
-│   │   │   │               └── service
-│   │   │   │                   └── EventService.java
-│   │   │   └── resources
-│   │   │       ├── application-test.yml
-│   │   │       ├── application.yml
-│   │   │       ├── banner.txt
-│   │   │       ├── db
-│   │   │       │   └── migration
-│   │   │       │       ├── V2__create_tbl.sql
-│   │   │       │       ├── V3__create_idx.sql
-│   │   │       │       └── V4__grant_priv.sql
-│   │   │       └── static
-│   │   │           └── index.html
-│   │   └── test
-│   │       └── java
-│   │           └── com
-│   │               └── krimo
-│   │                   └── event
-│   │                       ├── controller
-│   │                       │   └── EventControllerTest.java
-│   │                       ├── data
-│   │                       │   ├── EventTest.java
-│   │                       │   └── Section.java
-│   │                       └── service
-│   │                           └── EventServiceTest.java
-│   └── target
-│       ├── event.jar
-│       ├── event.jar.original
-├── grafana
-│   ├── dashboards
-│   │   ├── dashboard.yml
-│   │   ├── pg-dashboard.json
-│   │   └── spring-dashboard.json
-│   └── datasources
-│       └── datasource.yml
-├── notification
-│   ├── pom.xml
-│   ├── src
-│   │   ├── main
-│   │   │   ├── java
-│   │   │   │   └── com
-│   │   │   │       └── krimo
-│   │   │   │           └── notification
-│   │   │   │               ├── client
-│   │   │   │               │   └── UserProfileClient.java
-│   │   │   │               ├── config
-│   │   │   │               │   ├── KafkaConsumerConfig.java
-│   │   │   │               │   └── RedisConfig.java
-│   │   │   │               ├── message
-│   │   │   │               │   ├── BrokerMessage.java
-│   │   │   │               │   └── payload
-│   │   │   │               │       └── TicketPurchasePayload.java
-│   │   │   │               ├── NotificationApplication.java
-│   │   │   │               ├── repository
-│   │   │   │               │   └── BrokerMessageRepository.java
-│   │   │   │               └── service
-│   │   │   │                   ├── ClientService.java
-│   │   │   │                   ├── MessageSenderService.java
-│   │   │   │                   └── NotificationService.java
-│   │   │   └── resources
-│   │   │       ├── application.yml
-│   │   │       └── banner.txt
-│   │   └── test
-│   │       └── java
-│   │           └── com
-│   │               └── krimo
-│   │                   └── notification
-│   │                       ├── repository
-│   │                       │   └── BrokerMessageRepositoryImplTest.java
-│   │                       └── service
-│   │                           └── NotificationServiceTest.java
-│   └── target
-│       ├── notification.jar
-│       ├── notification.jar.original
-├── pom.xml
-├── prometheus
-│   └── prometheus.yml
-├── ticket
-│   ├── pom.xml
-│   ├── src
-│   │   ├── main
-│   │   │   ├── java
-│   │   │   │   └── com
-│   │   │   │       └── krimo
-│   │   │   │           └── ticket
-│   │   │   │               ├── config
-│   │   │   │               │   └── TicketAppConfig.java
-│   │   │   │               ├── controller
-│   │   │   │               │   ├── TicketController.java
-│   │   │   │               │   └── TicketDetailsController.java
-│   │   │   │               ├── dao
-│   │   │   │               │   └── EventDAO.java
-│   │   │   │               ├── data
-│   │   │   │               │   ├── Outbox.java
-│   │   │   │               │   ├── Section.java
-│   │   │   │               │   ├── TicketDetails.java
-│   │   │   │               │   ├── TicketDetailsPK.java
-│   │   │   │               │   └── Ticket.java
-│   │   │   │               ├── dto
-│   │   │   │               │   ├── TicketDetailsDTO.java
-│   │   │   │               │   └── TicketDTO.java
-│   │   │   │               ├── exception
-│   │   │   │               │   ├── ApiExceptionHandler.java
-│   │   │   │               │   ├── ApiException.java
-│   │   │   │               │   └── ApiRequestException.java
-│   │   │   │               ├── payload
-│   │   │   │               │   └── TicketPurchasePayload.java
-│   │   │   │               ├── repository
-│   │   │   │               │   ├── OutboxRepository.java
-│   │   │   │               │   ├── TicketDetailsRepository.java
-│   │   │   │               │   └── TicketRepository.java
-│   │   │   │               ├── service
-│   │   │   │               │   ├── TicketDetailsService.java
-│   │   │   │               │   └── TicketService.java
-│   │   │   │               ├── TicketApplication.java
-│   │   │   │               └── utils
-│   │   │   │                   └── Utils.java
-│   │   │   └── resources
-│   │   │       ├── application-test.yml
-│   │   │       ├── application.yml
-│   │   │       ├── banner.txt
-│   │   │       ├── db
-│   │   │       │   └── migration
-│   │   │       │       ├── V5__create_tbls.sql
-│   │   │       │       └── V6__create_idx.sql
-│   │   │       └── static
-│   │   │           └── index.html
-│   │   └── test
-│   │       └── java
-│   │           └── com
-│   │               └── krimo
-│   │                   └── ticket
-│   │                       ├── config
-│   │                       │   └── PostgresContainerEnv.java
-│   │                       ├── container
-│   │                       │   └── PostgresTestContainer.java
-│   │                       ├── controller
-│   │                       │   ├── TicketControllerTest.java
-│   │                       │   └── TicketDetailsControllerTest.java
-│   │                       ├── dao
-│   │                       │   └── EventDAOTest.java
-│   │                       ├── data
-│   │                       │   ├── Section.java
-│   │                       │   ├── TicketDetailsTest.java
-│   │                       │   └── TicketTest.java
-│   │                       ├── repository
-│   │                       │   └── TicketRepositoryTest.java
-│   │                       └── service
-│   │                           ├── TicketDetailsServiceTest.java
-│   │                           └── TicketServiceTest.java
-│   └── target
-│       ├── ticket.jar
-│       └── ticket.jar.original
-└── userprofile
-    ├── pom.xml
-    ├── src
-    │   ├── main
-    │   │   ├── java
-    │   │   │   └── com
-    │   │   │       └── krimo
-    │   │   │           └── userprofile
-    │   │   │               ├── config
-    │   │   │               │   └── UserProfileAppConfig.java
-    │   │   │               ├── controller
-    │   │   │               │   └── UserProfileController.java
-    │   │   │               ├── domain
-    │   │   │               │   └── UserProfile.java
-    │   │   │               ├── dto
-    │   │   │               │   └── UserProfileDTO.java
-    │   │   │               ├── repository
-    │   │   │               │   └── UserProfileRepository.java
-    │   │   │               ├── service
-    │   │   │               │   └── UserProfileService.java
-    │   │   │               └── UserProfileApplication.java
-    │   │   └── resources
-    │   │       ├── application.yml
-    │   │       ├── banner.txt
-    │   │       ├── db
-    │   │       │   └── migration
-    │   │       │       └── V1__create_tbl.sql
-    │   │       └── static
-    │   │           └── index.html
-    │   └── test
-    │       └── java
-    │           └── com
-    │               └── krimo
-    │                   └── userprofile
-    │                       └── UserprofileApplicationTests.java
-    └── target
-        ├── userprofile.jar
-        └── userprofile.jar.original
-
-280 directories, 265 files
+├───.github
+│   └───workflows
+├───.idea
+├───api-gateway
+│   └───src
+│       └───main
+│           ├───java
+│           │   └───com
+│           │       └───krimo
+│           │           └───gateway
+│           └───resources
+├───connectors
+├───eureka
+│   └───src
+│       └───main
+│           ├───java
+│           │   └───com
+│           │       └───krimo
+│           │           └───eureka
+│           └───resources
+├───event-command
+│   └───src
+│       ├───main
+│       │   ├───java
+│       │   │   └───com
+│       │   │       └───krimo
+│       │   │           └───event_command
+│       │   │               ├───config
+│       │   │               ├───controller
+│       │   │               ├───data
+│       │   │               ├───dto
+│       │   │               ├───exception
+│       │   │               ├───repository
+│       │   │               └───service
+│       │   └───resources
+│       │       ├───db
+│       │       │   └───migration
+│       │       └───static
+│       └───test
+│           └───java
+│               └───com
+│                   └───krimo
+│                       └───event_command
+│                           ├───controller
+│                           ├───data
+│                           └───service
+├───event-indexer
+│   └───src
+│       └───main
+│           ├───java
+│           │   └───com
+│           │       └───krimo
+│           │           └───event_indexer
+│           │               ├───config
+│           │               ├───payload
+│           │               └───service
+│           └───resources
+├───event-query
+│   └───src
+│       └───main
+│           ├───java
+│           │   └───com
+│           │       └───krimo
+│           │           └───event_query
+│           │               ├───config
+│           │               ├───controller
+│           │               ├───data
+│           │               ├───exception
+│           │               └───service
+│           └───resources
+│               └───static
+├───grafana
+│   ├───dashboards
+│   └───datasources
+├───notification
+│   └───src
+│       ├───main
+│       │   ├───java
+│       │   │   └───com
+│       │   │       └───krimo
+│       │   │           └───notification
+│       │   │               ├───client
+│       │   │               ├───config
+│       │   │               ├───message
+│       │   │               │   └───payload
+│       │   │               ├───repository
+│       │   │               └───service
+│       │   └───resources
+│       └───test
+│           └───java
+│               └───com
+│                   └───krimo
+│                       └───notification
+│                           ├───repository
+│                           └───service
+├───postgres
+│   └───init
+├───prometheus
+├───static
+├───ticket
+│   └───src
+│       ├───main
+│       │   ├───java
+│       │   │   └───com
+│       │   │       └───krimo
+│       │   │           └───ticket
+│       │   │               ├───config
+│       │   │               ├───controller
+│       │   │               ├───dao
+│       │   │               ├───data
+│       │   │               ├───dto
+│       │   │               ├───exception
+│       │   │               ├───payload
+│       │   │               ├───repository
+│       │   │               ├───service
+│       │   │               └───utils
+│       │   └───resources
+│       │       ├───db
+│       │       │   └───migration
+│       │       └───static
+│       └───test
+│           └───java
+│               └───com
+│                   └───krimo
+│                       └───ticket
+│                           ├───config
+│                           ├───container
+│                           ├───controller
+│                           ├───dao
+│                           ├───data
+│                           ├───repository
+│                           └───service
+└───userprofile
+    └───src
+        ├───main
+        │   ├───java
+        │   │   └───com
+        │   │       └───krimo
+        │   │           └───userprofile
+        │   │               ├───config
+        │   │               ├───controller
+        │   │               ├───domain
+        │   │               ├───dto
+        │   │               ├───repository
+        │   │               └───service
+        │   └───resources
+        │       ├───db
+        │       │   └───migration
+        │       └───static
+        └───test
+            └───java
+                └───com
+                    └───krimo
+                        └───userprofile
 
 ```
 
