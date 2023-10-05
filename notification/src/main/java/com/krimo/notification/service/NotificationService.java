@@ -16,29 +16,18 @@ import org.springframework.transaction.annotation.Transactional;
 class NotificationService {
 
     private final ObjectMapper objectMapper;
-    private final MessageSenderService senderService;
     private final ClientService clientService;
+    private final MessageSenderService senderService;
     private final BrokerMessageRepository messageRepository;
 
     @KafkaListener(topics = "outbox.event.ticket_purchase")
-    public void sendPurchaseConfirmation(String ticketPurchase) {
+    public void sendPurchaseConfirmation(String ticketPurchase) throws JsonProcessingException {
 
-        BrokerMessage message;
-
-        try {
-            message = objectMapper.readValue(ticketPurchase, BrokerMessage.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Unable to deserialize broker message.");
-        }
+        BrokerMessage message = objectMapper.readValue(ticketPurchase, BrokerMessage.class);
 
         if (messageRepository.isKeyPresent(message.id())) { return; }
 
-        TicketPurchasePayload payload;
-        try {
-            payload = objectMapper.readValue(message.payload(), TicketPurchasePayload.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Unable to deserialize broker message payload.");
-        }
+        TicketPurchasePayload payload = objectMapper.readValue(message.payload(), TicketPurchasePayload.class);
 
         String email = clientService.getEmail(payload.purchasedBy());
         String arg = payload.eventName();

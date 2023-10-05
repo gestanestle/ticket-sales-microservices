@@ -52,6 +52,9 @@ eureka:
     service-url:
       defaultZone: http://${eureka.instance.hostname}:8761/eureka
 
+userprofile:
+  service_url: http://localhost:8084
+
 # Monitoring
 management:
   endpoints:

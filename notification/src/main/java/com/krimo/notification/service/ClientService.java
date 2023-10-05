@@ -1,24 +1,31 @@
 package com.krimo.notification.service;
 
-import com.krimo.notification.client.UserProfileClient;
+import com.krimo.notification.exception.UserProfileServiceException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 public interface ClientService {
-    String getEmail(Long id);
+
+    String getEmail(long id);
 }
 
-@RequiredArgsConstructor
 @Service
-class UserProfileClientService implements ClientService {
+@RequiredArgsConstructor
+class WebClientServiceImpl implements ClientService {
 
-    private final UserProfileClient userProfileClient;
+    private final WebClient webClient;
 
     @Override
-    public String getEmail(Long id){
-        ResponseEntity<String> response = userProfileClient.getUserEmail(id);
-
-        return response.getBody();
+    public String getEmail(long id) {
+        return webClient.get()
+                .uri("/api/v2/user-profiles/{id}/email", id)
+                .retrieve()
+                .onStatus(httpStatus -> httpStatus.is4xxClientError() || httpStatus.is5xxServerError(),
+                        error -> Mono.error(new UserProfileServiceException(
+                                String.format("Failed to retrieve email address of User %d.", id))))
+                .bodyToMono(String.class)
+                .block();
     }
 }

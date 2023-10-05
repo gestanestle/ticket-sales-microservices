@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -21,15 +22,15 @@ import static org.mockito.Mockito.*;
 public class NotificationServiceTest {
 
     @Mock private ObjectMapper objectMapper;
-    @Mock private MessageSenderService senderService;
     @Mock private ClientService clientService;
+    @Mock private MessageSenderService senderService;
     @Mock private BrokerMessageRepository messageRepository;
     @InjectMocks @Autowired
     private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService(objectMapper, senderService, clientService, messageRepository);
+        notificationService = new NotificationService(objectMapper, clientService, senderService, messageRepository);
     }
 
     @Test
@@ -49,7 +50,7 @@ public class NotificationServiceTest {
         when(objectMapper.readValue(ticketPurchase, BrokerMessage.class)).thenReturn(message);
         when(messageRepository.isKeyPresent(message.id())).thenReturn(false);
         when(objectMapper.readValue(payloadJSON, TicketPurchasePayload.class)).thenReturn(payload);
-        when(clientService.getEmail(1L)).thenReturn(email);
+        when(clientService.getEmail(payload.purchasedBy())).thenReturn(email);
 
         notificationService.sendPurchaseConfirmation(ticketPurchase);
 

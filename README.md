@@ -13,7 +13,8 @@ Ticket Sales Microservices uses a number of tools and frameworks to work properl
 
 - Java, PostgreSQL, Redis, Elasticsearch
 - Spring Boot - Web, Actuator
-- Spring Cloud - Feign Client, Eureka Server/Client, API Gateway
+- Spring Cloud - Eureka Server/Client, API Gateway
+- Spring 5 WebFlux - WebClient
 - Spring Data JPA, Spring JDBC, Flyway
 - Spring Data Redis, Jedis
 - Java API Client for Elasticsearch
@@ -84,7 +85,7 @@ While the API layer used for Hibernate are Spring Data JPA and Spring JDBC, the 
 The schema creation, versioning, and migrations are all managed by Flyway.
 
 ### Testing
-The services Event, Ticket , and Notification are unit-tested with JUnit, Mockito, and MockMVC, and DB-integration tested with Test Containers.
+The services ```Event Command```, ```Ticket``` , and ```Notification``` are unit-tested with JUnit, Mockito, and MockMVC, and DB-integration tested with Test Containers.
 
 ### Monitoring
 
@@ -226,8 +227,8 @@ For Ticket Service, it will be as follows: </br>
 │       │   │   └───com
 │       │   │       └───krimo
 │       │   │           └───notification
-│       │   │               ├───client
 │       │   │               ├───config
+│       │   │               ├───exception
 │       │   │               ├───message
 │       │   │               │   └───payload
 │       │   │               ├───repository
