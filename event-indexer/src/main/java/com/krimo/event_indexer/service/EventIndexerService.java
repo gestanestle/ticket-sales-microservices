@@ -29,7 +29,7 @@ public class EventIndexerService {
         this.objectMapper = objectMapper;
     }
 
-    @KafkaListener(topics = "event_ticket_db.public.event")
+    @KafkaListener(topics = "event_db.public.event")
     public void indexDocuments(String eventAgg) {
         logger.debug("Event Message: " + eventAgg);
 

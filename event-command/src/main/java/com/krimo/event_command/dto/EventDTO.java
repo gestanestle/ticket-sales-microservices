@@ -1,30 +1,22 @@
 package com.krimo.event_command.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import com.krimo.event_command.data.types.Status;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class EventDTO {
+public record EventDTO (
+        String name,
+        String banner,
 
-    private Long id;
-    private String name;
-    private String description;
-    private String venue;
-    @JsonProperty("date_time")
-    private LocalDateTime dateTime;
-    @JsonProperty("created_by")
-    private Long createdBy;
-    @JsonProperty("created_At")
-    private LocalDateTime createdAt;
-    @JsonProperty("is_canceled")
-    private Boolean isCanceled;
+        String description,
+        String venue,
+        LocalDateTime startDateTime,
+        LocalDateTime endDateTime,
+        String organizer,
+        Set<String> tags,
+        Status status
+) {}
 
-}
 
 

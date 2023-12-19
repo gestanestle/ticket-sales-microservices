@@ -307,6 +307,7 @@ networks:
 
 volumes:
   postgres_data:
+    name: postgres_data
   elastic_data:
   prometheus_data:
   grafana_data:

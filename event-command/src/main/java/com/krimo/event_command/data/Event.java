@@ -1,9 +1,10 @@
 package com.krimo.event_command.data;
 
+import com.krimo.event_command.data.types.Status;
+import jakarta.persistence.*;
 import lombok.*;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,31 +20,35 @@ public class Event {
     private Long id;
     @Column(name = "event_name")
     private String name;
+    private String banner;
     private String description;
     private String venue;
-    @Column(name = "date_time")
-    private LocalDateTime dateTime;
-    @Column(name = "created_by")
-    private Long createdBy;
+    @Column(name = "start_datetime")
+    private LocalDateTime startDateTime;
+    @Column(name = "end_datetime")
+    private LocalDateTime endDateTime;
+    private String organizer;
+    @ElementCollection
+    private Set<String> tags;
+    @Enumerated(EnumType.STRING)
+    private Status status;
     @Column(name = "created_At")
     private LocalDateTime createdAt;
-    @Column(name = "is_canceled")
-    private Boolean isCanceled;
 
-    public Event(String name, String description, String venue, LocalDateTime dateTime, Long createdBy, LocalDateTime createdAt, Boolean isCanceled) {
+    public Event(String name, String banner, String description, String venue, LocalDateTime startDateTime, LocalDateTime endDateTime, String organizer, Set<String> tags, Status status, LocalDateTime createdAt) {
         this.name = name;
+        this.banner = banner;
         this.description = description;
         this.venue = venue;
-        this.dateTime = dateTime;
-        this.createdBy = createdBy;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
+        this.organizer = organizer;
+        this.tags = tags;
+        this.status = status;
         this.createdAt = createdAt;
-        this.isCanceled = isCanceled;
     }
 
-    public static Event create(String name, String description, String venue,
-                                    LocalDateTime dateTime, Long createdBy) {
-        return new Event(name, description, venue, dateTime, createdBy,
-                        LocalDateTime.now(), false);
+    public static Event create(String name, String banner, String description, String venue, LocalDateTime startDateTime, LocalDateTime endDateTime, String organizer, Set<String> tags) {
+        return new Event(name, banner, description, venue, startDateTime, endDateTime, organizer, tags, Status.ACTIVE, LocalDateTime.now());
     }
-
 }

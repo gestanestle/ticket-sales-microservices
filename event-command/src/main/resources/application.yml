@@ -4,23 +4,23 @@ spring:
     name: event-command
 
   # Flyway migrations
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-    fail-on-missing-locations: true
+#  flyway:
+#    enabled: true
+#    locations: classpath:db/migration
+#    baseline-on-migrate: true
+#    fail-on-missing-locations: true
 
   # Database
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${postgres.hostname}:5432/event_ticket_db
+    url: jdbc:postgresql://${postgres.hostname}:5432/event_db
     username: eventmanager
     password: postgres
 
   # JPA properties
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -34,10 +34,13 @@ spring:
 postgres:
   hostname: localhost
 
+# Kafka outbox topic
+event:
+  outbox:
+    topic: event_status
+
 # Logger configuration
 logging:
-  pattern:
-    console: "%d %-5level %logger : %msg%n"
   level:
     org.springframework: info
     org.hibernate.stat: debug
