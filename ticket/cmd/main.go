@@ -4,48 +4,46 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
-	"ticket/internal/config"
+	"ticket/internal/dao"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
 	
-	config.ConsumeTopics()
-	mux := http.NewServeMux();
+	db := dao.NewCon()
+	defer db.Close()
 
-	// http.HandleFunc("/api/v3/events", )
+	consumeTopics()
 
-	mux.HandleFunc("/", home)
-    log.Print("Starting server on :4000")
-    err := http.ListenAndServe(":4000", mux)
-    log.Fatal(err)
+	r := mux.NewRouter()
 
+    r.HandleFunc("/api/v3/events/{id}/tickets", defineTicket).Methods("POST")
+
+	log.Println("Starting server on :4000")
+    http.ListenAndServe(":4000", r)
 
 }
 
-func WriteJson(w http.ResponseWriter, status int, data any) error {
-	w.WriteHeader(status)
+func WriteJson(w http.ResponseWriter, data any) error {
 	w.Header().Set("Content-Type", "application/json")
-	return json.NewEncoder(w).Encode(data) 
+	return json.NewEncoder(w).Encode(data)
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-    w.Write([]byte("haru warudo"))
- }
 
-func profile(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		w.Header().Set("Allow", "GET")
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		return
-	}
+// func profile(w http.ResponseWriter, r *http.Request) {
+// 	if r.Method != "GET" {
+// 		w.Header().Set("Allow", "GET")
+// 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+// 		return
+// 	}
 
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
-	if err != nil || id < 1 {
-		http.NotFound(w, r)
-		return
-	}
+// 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+// 	if err != nil || id < 1 {
+// 		http.NotFound(w, r)
+// 		return
+// 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"user": "delulu"}`))
-}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.Write([]byte(`{"user": "delulu"}`))
+// }

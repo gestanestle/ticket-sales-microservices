@@ -1,10 +1,11 @@
-package config
+package main
 
 import (
 	"encoding/json"
 	"log"
 
-	"ticket/internal/model"
+	"ticket/internal/dao"
+	"ticket/internal/models"
 
 	"github.com/IBM/sarama"
 )
@@ -12,9 +13,8 @@ import (
 const broker = "localhost:9092"
 const topic = "outbox.event.event_status"
 
-func ConsumeTopics() {
+func consumeTopics() {
 
-    log.Println("At ConsumeTopics()...")
     consumer, err := sarama.NewConsumer([]string{broker}, nil)
 	if err != nil {
 		log.Println("Could not create consumer: ", err)
@@ -24,8 +24,8 @@ func ConsumeTopics() {
 	if err != nil {
 		log.Println("Error retrieving partitionList ", err)
 	}
-	initialOffset := sarama.OffsetOldest
 
+	initialOffset := sarama.OffsetOldest
 	for _, partition := range partitionList {
 		pc, _ := consumer.ConsumePartition(topic, partition, initialOffset)
 
@@ -40,13 +40,13 @@ func ConsumeTopics() {
 func structify(message *sarama.ConsumerMessage) {
     v := message.Value
 
-    msg := model.BrokerMessage{}
+    var msg models.BrokerMessage
     msgErr := json.Unmarshal(v, &msg)
     if msgErr != nil {
         log.Println(msgErr.Error()) 
     }
 
-    event := model.Event{}
+    var event models.Event
     eventErr := json.Unmarshal([]byte(msg.Payload), &event)
     if eventErr != nil {
         log.Println(eventErr.Error()) 
@@ -54,4 +54,6 @@ func structify(message *sarama.ConsumerMessage) {
 
     log.Printf("Event ID: %v", event.ID)
     log.Printf("Status: %v", event.IsActive)
+
+	dao.CreateEvent(event)
 }
