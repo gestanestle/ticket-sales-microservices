@@ -15,8 +15,7 @@ CREATE TABLE IF NOT EXISTS public.ticket (
 CREATE TABLE IF NOT EXISTS public.purchase (
     purchase_id BIGSERIAL PRIMARY KEY,
     ticket_code BIGINT,
-    ticket_type VARCHAR(255),
-    ticket_price FLOAT,
+    ticket_id BIGINT REFERENCES ticket(ticket_id)
     quantity INTEGER,
     purchase_status VARCHAR(255),
     purchased_by BIGINT,

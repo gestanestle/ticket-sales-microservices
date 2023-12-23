@@ -18,8 +18,11 @@ func main() {
 
 	r := mux.NewRouter()
 
-    r.HandleFunc("/api/v3/events/{id}/tickets", defineTicket).Methods("POST")
-
+    r.HandleFunc("/api/v3/events/{id}/ticket-details", defineTicket).Methods("POST")
+	r.HandleFunc("/api/v3/ticket-details/{ticketID}", getTicket).Methods("GET")
+	r.HandleFunc("/api/v3/ticket-details/{ticketID}", updateTicket).Methods("PUT")
+	r.HandleFunc("/api/v3/ticket-details/{ticketID}", deleteTicket).Methods("DELETE")
+	
 	log.Println("Starting server on :4000")
     http.ListenAndServe(":4000", r)
 

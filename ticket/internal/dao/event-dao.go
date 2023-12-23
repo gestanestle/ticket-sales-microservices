@@ -4,12 +4,11 @@ import (
 	"context"
 	"log"
 	"ticket/internal/models"
+
+	"github.com/jackc/pgx/v5"
 )
 
-const errMsg = "Couldnt execute sql statement. %v"
-
-func CreateEvent(event models.Event) {
-	log.Print("AT CREATE EVENT...")
+func PersistEvent(event models.Event) error {
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
@@ -18,13 +17,34 @@ func CreateEvent(event models.Event) {
 
 	defer db.Release()
 
-	q := `INSERT INTO event (event_id, is_active) VALUES ($1, $2)`
-	_,err = db.Query(context.Background(), q, event.ID, event.IsActive)
-
+	var exists bool
+	q := "SELECT EXISTS(SELECT 1 FROM event WHERE event_id = $1)"
+	err = db.QueryRow(context.Background(), q, event.ID).Scan(&exists)
 	if err != nil {
-		log.Printf(errMsg, err)
-		return
+		log.Panicf("db.QueryRow \n%v", err)
 	}
 
-	log.Printf("Created new Event with ID: %d", event.ID)
+	if exists {
+		log.Println("Event already persisted.")
+		return nil
+	}
+
+	tx, err := conn.BeginTx(context.Background(), pgx.TxOptions{})
+	if err != nil {
+		log.Panicf("conn.BeginTx \n%v", err)
+	}
+	defer tx.Rollback(context.Background())
+
+	q = `INSERT INTO event (event_id, is_active) VALUES ($1, $2)`
+	_,err = tx.Exec(context.Background(), q, event.ID, event.IsActive)
+
+	if err != nil {
+		log.Panicf("tx.Exec \n%v", err)
+	}
+
+	if err := tx.Commit(context.Background()); err != nil {
+		log.Panicf("tx.Commit \n%v", err)
+	}
+
+	return nil
 }

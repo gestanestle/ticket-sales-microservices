@@ -55,5 +55,5 @@ func structify(message *sarama.ConsumerMessage) {
     log.Printf("Event ID: %v", event.ID)
     log.Printf("Status: %v", event.IsActive)
 
-	dao.CreateEvent(event)
+	dao.PersistEvent(event)
 }

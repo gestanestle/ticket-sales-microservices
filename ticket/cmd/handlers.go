@@ -77,6 +77,159 @@ func defineTicket(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func getTicket(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	paramId := params["ticketID"]
+	ticketId, err := strconv.Atoi(paramId)
+	if err != nil {
+		s := 400
+		m := "Error: parameter ID is not a valid int"
+		log.Println(m)
+		
+		w.WriteHeader(s)
+		WriteJson(w, Response {
+			Status: toString(s),
+			Message: m,
+			Data: nil,
+			Timestamp: time.Now(),
+		})
+		return
+	}
+
+	
+	ticket, err := dao.GetTicket(int64(ticketId))
+	var s int
+	if err != nil {
+
+		apiError := err.(*errors.APIError)
+		s = apiError.Status
+		m := apiError.Err.Error()
+		
+		w.WriteHeader(s)
+		WriteJson(w, Response {
+			Status: toString(s),
+			Message: m,
+			Data: nil,
+			Timestamp: time.Now(),
+		})
+		return
+	}
+
+	s = 200
+
+	w.WriteHeader(s)
+	WriteJson(w, Response {
+		Status: toString(s),
+		Message: "Ticket retrieved successfully.",
+		Data: ticket,
+		Timestamp: time.Now(),
+	})
+}
+
+func updateTicket(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	paramId := params["ticketID"]
+	ticketId, err := strconv.Atoi(paramId)
+	if err != nil {
+		s := 400
+		m := "Error: parameter ID is not a valid int"
+		log.Println(m)
+		
+		w.WriteHeader(s)
+		WriteJson(w, Response {
+			Status: toString(s),
+			Message: m,
+			Data: nil,
+			Timestamp: time.Now(),
+		})
+		return
+	}
+	
+	ticket := models.Ticket{}
+
+	err = json.NewDecoder(r.Body).Decode(&ticket)
+	ticket.ID = int(ticketId)
+	if err != nil {
+		log.Fatalf("Unable to update ticket. %v", err.Error())
+	}
+	
+	err = dao.UpdateTicket(ticket)
+
+	var s int
+	if err != nil {
+
+		apiError := err.(*errors.APIError)
+		s = apiError.Status
+		m := apiError.Err.Error()
+		
+		w.WriteHeader(s)
+		WriteJson(w, Response {
+			Status: toString(s),
+			Message: m,
+			Data: nil,
+			Timestamp: time.Now(),
+		})
+}
+
+	s = 200
+
+	w.WriteHeader(s)
+	WriteJson(w, Response {
+		Status: toString(s),
+		Message: "Ticket updated successfully.",
+		Data: nil,
+		Timestamp: time.Now(),
+	})
+}
+
+func deleteTicket(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	paramId := params["ticketID"]
+	ticketId, err := strconv.Atoi(paramId)
+	if err != nil {
+		s := 400
+		m := "Error: parameter ID is not a valid int"
+		log.Println(m)
+		
+		w.WriteHeader(s)
+		WriteJson(w, Response {
+			Status: toString(s),
+			Message: m,
+			Data: nil,
+			Timestamp: time.Now(),
+		})
+		return
+	}
+	
+	err = dao.DeleteTicket(int64(ticketId))
+
+	var s int
+	if err != nil {
+
+		apiError := err.(*errors.APIError)
+		s = apiError.Status
+		m := apiError.Err.Error()
+
+		w.WriteHeader(s)
+		WriteJson(w, Response {
+			Status: toString(s),
+			Message: m,
+			Data: nil,
+			Timestamp: time.Now(),
+		})
+	}
+
+	s = 200
+
+	w.WriteHeader(s)
+	WriteJson(w, Response {
+		Status: toString(s),
+		Message: "Ticket deleted successfully.",
+		Data: nil,
+		Timestamp: time.Now(),
+	})
+}
+
 func toString(s int) string {
 	switch s {
 	case 200:
