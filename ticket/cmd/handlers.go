@@ -77,6 +77,55 @@ func defineTicket(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func getAllTickets(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	paramId := params["id"]
+	eventId, err := strconv.Atoi(paramId)
+	if err != nil {
+		s := 400
+		m := "Error: parameter ID is not a valid int"
+		log.Println(m)
+		
+		w.WriteHeader(s)
+		WriteJson(w, Response {
+			Status: toString(s),
+			Message: m,
+			Data: nil,
+			Timestamp: time.Now(),
+		})
+		return
+	}
+
+	
+	tickets, err := dao.GetAllTickets(int64(eventId))
+	var s int
+	if err != nil {
+
+		apiError := err.(*errors.APIError)
+		s = apiError.Status
+		m := apiError.Err.Error()
+		
+		w.WriteHeader(s)
+		WriteJson(w, Response {
+			Status: toString(s),
+			Message: m,
+			Data: nil,
+			Timestamp: time.Now(),
+		})
+		return
+	}
+
+	s = 200
+
+	w.WriteHeader(s)
+	WriteJson(w, Response {
+		Status: toString(s),
+		Message: "All tickets for event retrieved successfully.",
+		Data: tickets,
+		Timestamp: time.Now(),
+	})
+}
+
 func getTicket(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	paramId := params["ticketID"]

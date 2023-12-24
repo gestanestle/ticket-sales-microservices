@@ -19,6 +19,7 @@ func main() {
 	r := mux.NewRouter()
 
     r.HandleFunc("/api/v3/events/{id}/ticket-details", defineTicket).Methods("POST")
+	r.HandleFunc("/api/v3/events/{id}/ticket-details", getAllTickets).Methods("GET")
 	r.HandleFunc("/api/v3/ticket-details/{ticketID}", getTicket).Methods("GET")
 	r.HandleFunc("/api/v3/ticket-details/{ticketID}", updateTicket).Methods("PUT")
 	r.HandleFunc("/api/v3/ticket-details/{ticketID}", deleteTicket).Methods("DELETE")

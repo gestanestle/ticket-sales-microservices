@@ -29,6 +29,32 @@ func DefineTicket(t models.Ticket) (int64, error) {
 	return id, nil
 }
 
+func GetAllTickets(id int64) ([]models.Ticket, error) {
+
+	db, err := conn.Acquire(context.Background())
+	if err != nil {
+		log.Panicf("conn.Acquire \n%v", err)
+	}
+	defer db.Release()
+
+	q := `SELECT * FROM ticket WHERE event_id = $1`
+	rows, _ := db.Query(context.Background(), q, id)
+
+	tickets, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.Ticket])
+	if err != nil {
+		log.Printf("pgx.CollectRows \n%v", err)
+		return []models.Ticket{}, err
+	}
+
+	if len(tickets) == 0 {
+		log.Printf("No records found for EventID: %d", id)
+		return []models.Ticket{}, errors.RaiseErr(404, "Record not found.")
+	} 
+
+	log.Printf("Retrieved tickets for Event with ID: %d", id)
+	return tickets, nil
+}
+
 func GetTicket(id int64) (models.Ticket, error) {
 
 	db, err := conn.Acquire(context.Background())
@@ -37,27 +63,23 @@ func GetTicket(id int64) (models.Ticket, error) {
 	}
 	defer db.Release()
 
-	var t models.Ticket
 	q := `SELECT * FROM ticket WHERE ticket_id = $1`
 	rows, _ := db.Query(context.Background(), q, id)
 
-	tickets, err := pgx.CollectRows(rows, pgx.RowToStructByPos[models.Ticket])
+	ticket, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByPos[models.Ticket])
 	if err != nil {
-		log.Printf("CollectRows error: %v", err)
+		log.Printf("pgx.CollectRows \n%v", err)
 		return models.Ticket{}, err
 	}
 
-	if len(tickets) == 0 {
-		log.Printf("No records found for TicketID: %d", id)
-		return models.Ticket{}, errors.RaiseErr(404, "Record not found.")
-	} 
-
-	log.Printf("Retrieved Ticket with ID: %d", t.ID)
-	return tickets[0], nil
+	log.Printf("Retrieved Ticket with ID: %d", id)
+	return ticket, nil
 }
 
 func UpdateTicket(t models.Ticket) error {
-
+	log.Println(t.Type)
+	log.Println(t.Price)
+	log.Println(t.QtyStock)
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
 		log.Panicf("conn.Acquire \n%v", err)
@@ -70,6 +92,12 @@ func UpdateTicket(t models.Ticket) error {
 			price = COALESCE($2, price), 
 			qty_stock = COALESCE($3, qty_stock) 
 		WHERE ticket_id = $4
+
+		AND (
+			cast($1 as VARCHAR(255)) IS NOT NULL AND $1 IS DISTINCT FROM type OR
+			cast($2 as FLOAT) IS NOT NULL AND $2 IS DISTINCT FROM price OR
+			cast($3 as INTEGER) IS NOT NULL AND $3 IS DISTINCT FROM qty_stock
+	   )
 	`
 
 	_,err = db.Exec(context.Background(), q, t.Type, t.Price, t.QtyStock, t.ID)

@@ -15,13 +15,12 @@ type Event struct {
 type Ticket struct {
 	ID       int     `json:"ticketId"`
 	EventID  int 	 `json:"eventId"`
-	Type     string  `json:"ticketType"`
-	Price    float64 `json:"price"`
-	QtyStock int     `json:"qtyStock"`
+	Type     *string  `json:"ticketType"`
+	Price    *float64 `json:"price"`
+	QtyStock *int     `json:"qtyStock"`
 	QtySold  int     `json:"qtySold"`
 }
 	
-
 type Status struct {
 	BOOKED   string
 	CANCELED string
