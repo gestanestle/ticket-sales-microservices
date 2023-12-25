@@ -41,15 +41,15 @@ func structify(message *sarama.ConsumerMessage) {
     v := message.Value
 
     var msg models.BrokerMessage
-    msgErr := json.Unmarshal(v, &msg)
-    if msgErr != nil {
-        log.Println(msgErr.Error()) 
+    err := json.Unmarshal(v, &msg)
+    if err != nil {
+        log.Printf("json.Unmarshal %v", err.Error()) 
     }
 
     var event models.Event
-    eventErr := json.Unmarshal([]byte(msg.Payload), &event)
-    if eventErr != nil {
-        log.Println(eventErr.Error()) 
+    err = json.Unmarshal([]byte(msg.Payload), &event)
+    if err != nil {
+        log.Printf("json.Unmarshal %v", err.Error()) 
     }
 
     log.Printf("Event ID: %v", event.ID)

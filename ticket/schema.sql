@@ -12,12 +12,13 @@ CREATE TABLE IF NOT EXISTS public.ticket (
     qty_sold INTEGER
 );
 
+CREATE TYPE PURCHASE_STATUS AS ENUM ('BOOKED', 'CANCELED', 'REFUNDED');
+
 CREATE TABLE IF NOT EXISTS public.purchase (
     purchase_id BIGSERIAL PRIMARY KEY,
-    ticket_code BIGINT,
-    ticket_id BIGINT REFERENCES ticket(ticket_id)
-    quantity INTEGER,
-    purchase_status VARCHAR(255),
-    purchased_by BIGINT,
-    purchased_at TIMESTAMP
+    ticket_code VARCHAR(10),
+    ticket_id BIGINT REFERENCES ticket(ticket_id),
+    status VARCHAR(255),
+    customer_id BIGINT,
+    created_at TIMESTAMP
 );

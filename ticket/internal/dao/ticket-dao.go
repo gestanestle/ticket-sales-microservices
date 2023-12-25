@@ -13,7 +13,8 @@ func DefineTicket(t models.Ticket) (int64, error) {
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
-		log.Panicf("conn.Acquire \n%v", err)
+		log.Printf("conn.Acquire \n%v", err)
+		return -1, errors.RaiseErr(503, m503)
 	}
 	defer db.Release()
 
@@ -22,7 +23,8 @@ func DefineTicket(t models.Ticket) (int64, error) {
 	err = db.QueryRow(context.Background(), q, t.EventID, t.Type, t.Price, t.QtyStock, 0).Scan(&id)
 
 	if err != nil {
-		log.Panicf("db.QueryRow \n%v", err)
+		log.Printf("db.QueryRow \n%v", err)
+		return -1, errors.RaiseErr(503, m503)
 	}
 
 	log.Printf("Defined new Ticket with ID: %d", id)
@@ -33,7 +35,8 @@ func GetAllTickets(id int64) ([]models.Ticket, error) {
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
-		log.Panicf("conn.Acquire \n%v", err)
+		log.Printf("conn.Acquire \n%v", err)
+		return []models.Ticket{}, errors.RaiseErr(503, m503)
 	}
 	defer db.Release()
 
@@ -59,7 +62,8 @@ func GetTicket(id int64) (models.Ticket, error) {
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
-		log.Panicf("conn.Acquire \n%v", err)
+		log.Printf("conn.Acquire \n%v", err)
+		return models.Ticket{}, errors.RaiseErr(503, m503)
 	}
 	defer db.Release()
 
@@ -77,12 +81,11 @@ func GetTicket(id int64) (models.Ticket, error) {
 }
 
 func UpdateTicket(t models.Ticket) error {
-	log.Println(t.Type)
-	log.Println(t.Price)
-	log.Println(t.QtyStock)
+
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
-		log.Panicf("conn.Acquire \n%v", err)
+		log.Printf("conn.Acquire \n%v", err)
+		return errors.RaiseErr(503, m503)
 	}
 	defer db.Release()
 
@@ -103,7 +106,8 @@ func UpdateTicket(t models.Ticket) error {
 	_,err = db.Exec(context.Background(), q, t.Type, t.Price, t.QtyStock, t.ID)
 
 	if err != nil {
-		log.Panicf("db.Exec \n%v", err)
+		log.Printf("db.Exec \n%v", err)
+		return errors.RaiseErr(503, m503)
 	}
 
 	log.Printf("Updated Ticket with ID: %d", t.ID)
@@ -114,7 +118,8 @@ func DeleteTicket(id int64) error {
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
-		log.Panicf("conn.Acquire \n%v", err)
+		log.Printf("conn.Acquire \n%v", err)
+		return errors.RaiseErr(503, m503)
 	}
 	defer db.Release()
 
@@ -122,7 +127,8 @@ func DeleteTicket(id int64) error {
 	_,err = db.Exec(context.Background(), q, id)
 
 	if err != nil {
-		log.Panicf("db.Exec \n%v", err)
+		log.Printf("db.Exec \n%v", err)
+		return errors.RaiseErr(503, m503)
 	}
 
 	log.Printf("Deleted Ticket with ID: %d", id)
