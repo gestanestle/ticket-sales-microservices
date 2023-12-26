@@ -3,12 +3,11 @@ spring:
   application:
     name: event-command
 
-  # Flyway migrations
-#  flyway:
-#    enabled: true
-#    locations: classpath:db/migration
-#    baseline-on-migrate: true
-#    fail-on-missing-locations: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    fail-on-missing-locations: true
 
   # Database
   datasource:
@@ -20,7 +19,7 @@ spring:
   # JPA properties
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
