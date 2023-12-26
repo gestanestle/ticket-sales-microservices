@@ -15,7 +15,6 @@
         <module>event-command</module>
         <module>event-indexer</module>
         <module>event-query</module>
-        <module>ticket</module>
         <module>userprofile</module>
         <module>notification</module>
     </modules>
@@ -76,7 +75,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.7.5</version>
+                <version>3.1.2</version>
                 <configuration>
                     <excludes>
                         <exclude>

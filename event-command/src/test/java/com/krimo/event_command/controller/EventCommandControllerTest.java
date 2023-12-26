@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.nio.charset.StandardCharsets;
+
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -63,7 +65,7 @@ class EventCommandControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andExpect(status().is(201))
-                .andExpect(content().string("1"));
+                .andExpect(jsonPath("$.message",  org.hamcrest.Matchers.is("Event successfully created.")));
     }
 
     @Test
@@ -74,7 +76,16 @@ class EventCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(eventDtoJson)
                         .characterEncoding(StandardCharsets.UTF_8))
-                .andExpect(status().is(200));
+                .andExpect(status().is(200))
+                .andExpect(jsonPath("$.message",  org.hamcrest.Matchers.is("Event successfully updated.")));
     }
 
+    @Test
+    void deleteEvent() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .delete(String.format("http://localhost:8081/api/v2/events/%s", 1)))
+                .andExpect(status().is(200))
+                .andExpect(jsonPath("$.message",  org.hamcrest.Matchers.is("Event successfully deleted.")));
+    }
 }

@@ -53,7 +53,8 @@ func  PurchaseTickets (p models.PurchaseReq)([]int64, error) {
 	var isAvailable bool
 	q = `SELECT EXISTS (SELECT 1 FROM ticket WHERE ticket_id = $1 AND (qty_stock - qty_sold) >= $2) AS result;`
 	err = db.QueryRow(context.Background(), q, p.TicketID, p.Quantity).Scan(&isAvailable)
-	log.Print(isAvailable)
+	log.Printf("Is ticket available: %v", isAvailable) 
+	
 	if err != nil {
 		log.Printf("db.QueryRow \n%v", err)
 		return []int64{}, errors.RaiseErr(503, m503)	

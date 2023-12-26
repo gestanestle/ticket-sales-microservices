@@ -12,8 +12,6 @@ CREATE TABLE IF NOT EXISTS public.ticket (
     qty_sold INTEGER
 );
 
-CREATE TYPE PURCHASE_STATUS AS ENUM ('BOOKED', 'CANCELED', 'REFUNDED');
-
 CREATE TABLE IF NOT EXISTS public.purchase (
     purchase_id BIGSERIAL PRIMARY KEY,
     ticket_code VARCHAR(10),

@@ -63,23 +63,24 @@ class EventCommandServiceImpl implements EventCommandService {
                 -> new ApiRequestException(HttpStatus.NOT_FOUND, "Event does not exist."));
 
         if (Objects.nonNull(eventDTO.name())) event.setName(eventDTO.name());
-        if (Objects.nonNull(eventDTO.banner())) event.setName(eventDTO.banner());
-        if (Objects.nonNull(eventDTO.description())) event.setName(eventDTO.description());
-        if (Objects.nonNull(eventDTO.venue())) event.setName(eventDTO.venue());
+        if (Objects.nonNull(eventDTO.banner())) event.setBanner(eventDTO.banner());
+        if (Objects.nonNull(eventDTO.description())) event.setDescription(eventDTO.description());
+        if (Objects.nonNull(eventDTO.venue())) event.setVenue(eventDTO.venue());
 
         if (Objects.nonNull(eventDTO.startDateTime())) event.setStartDateTime(eventDTO.startDateTime());
         if (Objects.nonNull(eventDTO.endDateTime())) event.setEndDateTime(eventDTO.endDateTime());
         if (Objects.nonNull(eventDTO.organizer())) event.setOrganizer(eventDTO.organizer());
         if (Objects.nonNull(eventDTO.tags())) event.setTags(eventDTO.tags());
 
-        if (Objects.nonNull(eventDTO.status())) {
-            log.info("Event ID: " + eventId + ", Status: " + eventDTO.status());
-            event.setStatus(eventDTO.status());
-            boolean isActive = eventDTO.status().equals(Status.ACTIVE);
-            EventOutboxPayload eventOutboxPayload = new EventOutboxPayload(eventId, isActive);
-            String outboxPayload = Utils.writeToString(eventOutboxPayload);
-            outboxRepository.save(EventOutbox.publish(outboxTopic, outboxPayload));
-        }
+        if (Objects.isNull(eventDTO.status())) return;
+
+        log.info("Event ID: " + eventId + ", Status: " + eventDTO.status());
+        event.setStatus(eventDTO.status());
+        boolean isActive = eventDTO.status().equals(Status.ACTIVE);
+        EventOutboxPayload eventOutboxPayload = new EventOutboxPayload(eventId, isActive);
+        String outboxPayload = Utils.writeToString(eventOutboxPayload);
+        outboxRepository.save(EventOutbox.publish(outboxTopic, outboxPayload));
+
 
         eventRepository.save(event);
     }
