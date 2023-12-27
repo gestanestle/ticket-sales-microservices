@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -19,4 +20,8 @@ func NewCon() *pgxpool.Pool {
 	}
 	log.Println("Created connection to the database...")
 	return conn
+}
+
+type Dao struct {
+	Mu	sync.Mutex
 }

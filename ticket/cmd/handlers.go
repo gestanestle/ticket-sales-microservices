@@ -163,15 +163,19 @@ func purchaseTickets(w http.ResponseWriter, r *http.Request) {
 		WriteRes(w, 400, "Couldn't parse request object.", nil)
 		return
 	}
+	log.Printf("Received payload: %v", p)
 	
-	IDs, err := dao.PurchaseTickets(p)
+	d := dao.Dao{}
+	IDs, err := d.PurchaseTickets(p)
 
 	if err != nil {
 		apiError := err.(*errors.APIError)
 		WriteRes(w, apiError.Status, apiError.Err.Error(), nil)
+		log.Print(apiError.Error())
 		return
 	}
 
+	log.Printf("Sucessful transaction. Returning IDs: %v", IDs)
 	WriteRes(w, 200, "Purchase created successfully.", map[string][]int64{"id": IDs})
 }
 
@@ -185,7 +189,8 @@ func getPurchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	purchase, err := dao.GetPurchase(int64(purchaseId))
+	d := dao.Dao{}
+	purchase, err := d.GetPurchase(int64(purchaseId))
 	if err != nil {
 		apiError := err.(*errors.APIError)
 		WriteRes(w, apiError.Status, apiError.Err.Error(), nil)
@@ -219,7 +224,8 @@ func updatePurchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = dao.UpdatePurchase(int64(purchaseId), s)
+	d := dao.Dao{}
+	err = d.UpdatePurchase(int64(purchaseId), s)
 	if err != nil {
 		apiError := err.(*errors.APIError)
 		WriteRes(w, apiError.Status, apiError.Err.Error(), nil)

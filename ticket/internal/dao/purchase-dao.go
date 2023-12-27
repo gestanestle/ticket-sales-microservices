@@ -22,7 +22,10 @@ func generateSerialCode() string {
 	return string(b)
 }
 
-func  PurchaseTickets (p models.PurchaseReq)([]int64, error) {
+func (d *Dao) PurchaseTickets (p models.PurchaseReq)([]int64, error) {
+
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
@@ -41,6 +44,7 @@ func  PurchaseTickets (p models.PurchaseReq)([]int64, error) {
 	if !exists {
 		return []int64{}, errors.RaiseErr(400, "Ticket doesn't exist.")
 	}
+	log.Printf("Does ticket exist: %v", exists)
 
 	tx, err := conn.BeginTx(context.Background(), pgx.TxOptions{})
 	if err != nil {
@@ -65,9 +69,10 @@ func  PurchaseTickets (p models.PurchaseReq)([]int64, error) {
 	
 	var IDs []int64
 
-	n := 0
-	for n < p.Quantity {
+	n := 1
+	for n <= p.Quantity {
 	
+		log.Printf("Processing request %d/%d", n, p.Quantity)
 		var id int64
 		q = `INSERT INTO purchase (
 				ticket_code, ticket_id,
@@ -101,7 +106,10 @@ func  PurchaseTickets (p models.PurchaseReq)([]int64, error) {
 	return IDs, nil
 }
 
-func GetPurchase(id int64) (models.Purchase, error) {
+func (d *Dao) GetPurchase(id int64) (models.Purchase, error) {
+
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
@@ -123,7 +131,10 @@ func GetPurchase(id int64) (models.Purchase, error) {
 	return purchase, nil
 }
 
-func UpdatePurchase(id int64, s string) error {
+func (d *Dao) UpdatePurchase(id int64, s string) error {
+
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
