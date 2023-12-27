@@ -3,15 +3,15 @@ package main
 import (
 	"log"
 	"net/http"
-	"ticket/internal/dao"
+	"ticket/internal/db"
 
 	"github.com/gorilla/mux"
 )
 
 func main() {
 	
-	db := dao.NewCon()
-	defer db.Close()
+	d := db.NewCon()
+	defer d.Close()
 
 	consumeTopics()
 

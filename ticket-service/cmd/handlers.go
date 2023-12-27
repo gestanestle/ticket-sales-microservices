@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"ticket/internal/dao"
+	"ticket/internal/db"
 	"ticket/internal/errors"
 	"ticket/internal/models"
 	"time"
@@ -76,7 +76,7 @@ func defineTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d:= dao.Dao{}
+	d:= db.Dao{}
 
 	id, err := d.DefineTicket(ticket)
 
@@ -101,7 +101,7 @@ func getAllTickets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d:= dao.Dao{}
+	d:= db.Dao{}
 	tickets, err := d.GetAllTickets(int64(eventId))
 	var s int
 	if err != nil {
@@ -127,7 +127,7 @@ func getTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d:= dao.Dao{}
+	d:= db.Dao{}
 	ticket, err := d.GetTicket(int64(ticketId))
 	var s int
 	if err != nil {
@@ -161,7 +161,7 @@ func updateTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	d:= dao.Dao{}
+	d:= db.Dao{}
 	err = d.UpdateTicket(ticket)
 
 	if err != nil {
@@ -182,7 +182,7 @@ func deleteTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	d:= dao.Dao{}
+	d:= db.Dao{}
 	err = d.DeleteTicket(int64(ticketId))
 
 	if err != nil {
@@ -206,7 +206,7 @@ func purchaseTickets(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Received payload: %v", p)
 	
-	d := dao.Dao{}
+	d := db.Dao{}
 	IDs, err := d.PurchaseTickets(p)
 
 	if err != nil {
@@ -230,7 +230,7 @@ func getPurchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	d := dao.Dao{}
+	d := db.Dao{}
 	purchase, err := d.GetPurchase(int64(purchaseId))
 	if err != nil {
 		apiError := err.(*errors.APIError)
@@ -265,7 +265,7 @@ func updatePurchase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	d := dao.Dao{}
+	d := db.Dao{}
 	err = d.UpdatePurchase(int64(purchaseId), s)
 	if err != nil {
 		apiError := err.(*errors.APIError)

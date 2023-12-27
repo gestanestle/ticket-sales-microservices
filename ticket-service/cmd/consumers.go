@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
-	"ticket/internal/dao"
+	"ticket/internal/db"
 	"ticket/internal/models"
 
 	"github.com/IBM/sarama"
@@ -55,6 +55,6 @@ func structify(message *sarama.ConsumerMessage) {
     log.Printf("Event ID: %v", event.ID)
     log.Printf("Status: %v", event.IsActive)
 
-	d:= dao.Dao{}
+	d:= db.Dao{}
 	d.PersistEvent(event)
 }

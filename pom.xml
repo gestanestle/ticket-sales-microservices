@@ -11,12 +11,12 @@
 
     <modules>
         <module>api-gateway</module>
-        <module>eureka</module>
-        <module>event-command</module>
-        <module>event-indexer</module>
-        <module>event-query</module>
-        <module>userprofile</module>
-        <module>notification</module>
+        <module>eureka-server</module>
+        <module>event-command-service</module>
+        <module>event-indexer-service</module>
+        <module>event-query-service</module>
+        <module>user-service</module>
+        <module>notification-service</module>
     </modules>
 
     <properties>
