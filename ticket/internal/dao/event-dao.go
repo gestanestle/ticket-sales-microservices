@@ -8,7 +8,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func PersistEvent(event models.Event) error {
+func (d *Dao) PersistEvent(event models.Event) error {
+
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {

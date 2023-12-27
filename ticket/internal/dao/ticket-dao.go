@@ -9,7 +9,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func DefineTicket(t models.Ticket) (int64, error) {
+func (d *Dao) DefineTicket(t models.Ticket) (int64, error) {
+
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
@@ -31,7 +34,10 @@ func DefineTicket(t models.Ticket) (int64, error) {
 	return id, nil
 }
 
-func GetAllTickets(id int64) ([]models.Ticket, error) {
+func (d *Dao) GetAllTickets(id int64) ([]models.Ticket, error) {
+
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
@@ -58,7 +64,10 @@ func GetAllTickets(id int64) ([]models.Ticket, error) {
 	return tickets, nil
 }
 
-func GetTicket(id int64) (models.Ticket, error) {
+func (d *Dao) GetTicket(id int64) (models.Ticket, error) {
+
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
@@ -80,7 +89,10 @@ func GetTicket(id int64) (models.Ticket, error) {
 	return ticket, nil
 }
 
-func UpdateTicket(t models.Ticket) error {
+func (d *Dao) UpdateTicket(t models.Ticket) error {
+
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
 
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
@@ -114,8 +126,11 @@ func UpdateTicket(t models.Ticket) error {
 	return nil
 }
 
-func DeleteTicket(id int64) error {
+func (d *Dao) DeleteTicket(id int64) error {
 
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
+	
 	db, err := conn.Acquire(context.Background())
 	if err != nil {
 		log.Printf("conn.Acquire \n%v", err)
