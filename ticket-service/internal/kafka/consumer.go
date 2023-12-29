@@ -1,4 +1,4 @@
-package main
+package kafka
 
 import (
 	"encoding/json"
@@ -10,19 +10,18 @@ import (
 	"github.com/IBM/sarama"
 )
 
-const broker = "localhost:9092"
-const topic = "outbox.event.event_status"
+func Consume() {
 
-func consumeTopics() {
+	const topic  = "outbox.event.event_status"
 
     consumer, err := sarama.NewConsumer([]string{broker}, nil)
 	if err != nil {
-		log.Println("Could not create consumer: ", err)
+		log.Panicf("Could not create consumer: %v", err)
 	}
 
 	partitionList, err := consumer.Partitions(topic)
 	if err != nil {
-		log.Println("Error retrieving partitionList ", err)
+		log.Panicf("Error retrieving partitionList: %v", err)
 	}
 
 	initialOffset := sarama.OffsetOldest
@@ -43,13 +42,13 @@ func structify(message *sarama.ConsumerMessage) {
     var msg models.BrokerMessage
     err := json.Unmarshal(v, &msg)
     if err != nil {
-        log.Printf("json.Unmarshal %v", err.Error()) 
+        log.Panicf("json.Unmarshal %v", err.Error()) 
     }
 
     var event models.Event
     err = json.Unmarshal([]byte(msg.Payload), &event)
     if err != nil {
-        log.Printf("json.Unmarshal %v", err.Error()) 
+        log.Panicf("json.Unmarshal %v", err.Error()) 
     }
 
     log.Printf("Event ID: %v", event.ID)

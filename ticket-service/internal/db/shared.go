@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -31,4 +32,8 @@ func NewCon() *pgxpool.Pool {
 	}
 
 	return conn
+}
+
+type Dao struct {
+	Mu	sync.Mutex
 }

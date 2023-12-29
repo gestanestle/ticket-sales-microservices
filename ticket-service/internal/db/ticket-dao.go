@@ -149,3 +149,27 @@ func (d *Dao) DeleteTicket(id int64) error {
 	log.Printf("Deleted Ticket with ID: %d", id)
 	return nil
 }
+
+func (d *Dao) GetEventID(tID int64) (int64, error) {
+
+	d.Mu.Lock()
+	defer d.Mu.Unlock()
+
+	db, err := conn.Acquire(context.Background())
+	if err != nil {
+		log.Printf("conn.Acquire \n%v", err)
+		return -1, errors.RaiseErr(503, m503)
+	}
+	defer db.Release()
+
+	var e int64
+	q := `SELECT event_id FROM ticket WHERE ticket_id = $1`
+	err = db.QueryRow(context.Background(), q, tID).Scan(&e)
+	if err != nil {
+		log.Printf("db.QueryRow \n%v", err)
+		return -1, errors.RaiseErr(503, m503)
+	}
+
+	log.Printf("Retrieved Event with ID: %d", e)
+	return e, nil
+} 

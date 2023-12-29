@@ -54,3 +54,9 @@ type PurchaseReq struct {
 	Status      Status  `json:"status"`
 	CustomerID  int64   `json:"customerId"`
 }
+
+type PurchaseEvent struct {
+	EventID			int64		`json:"eventId"`
+	CustomerID		int64		`json:"userId"`
+	DateTime		time.Time	`json:"timestamp"`
+}
