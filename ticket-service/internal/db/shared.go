@@ -13,7 +13,7 @@ var conn *pgxpool.Pool
 
 func NewCon() *pgxpool.Pool {
 	var err error
-	conn, err = pgxpool.New(context.Background(), os.Getenv("DB_URL"))
+	conn, err = pgxpool.New(context.Background(), os.Getenv("PG_URL"))
 	if err != nil {
 		log.Printf("Unable to create connection pool: %v\n", err)
 		os.Exit(1)
@@ -37,3 +37,5 @@ func NewCon() *pgxpool.Pool {
 type Dao struct {
 	Mu	sync.Mutex
 }
+
+const m503 = "Unable to process request at the moment. Try again later."

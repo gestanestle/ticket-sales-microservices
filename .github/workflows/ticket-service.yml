@@ -1,0 +1,29 @@
+name: Ticket Service CI
+
+on:
+  push:
+    branches:
+      - krimaster
+    paths:
+      - "ticket-service/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: chericherilady
+          password: ${{ github.actor }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ticket-service/
+          push: true
+          tags: ${{ github.actor }}/ticket:3.0.0

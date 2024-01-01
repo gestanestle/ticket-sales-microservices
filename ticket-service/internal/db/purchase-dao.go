@@ -12,7 +12,6 @@ import (
 )
 
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-const m503 = "Unable to process request at the moment. Try again later."
 
 func generateSerialCode() string {
 	b := make([]byte, 10)

@@ -20,7 +20,7 @@ class NotificationService {
     private final MessageSenderService senderService;
     private final BrokerMessageRepository messageRepository;
 
-    @KafkaListener(topics = "outbox.event.ticket_purchase")
+    @KafkaListener(topics = "ticket_purchase")
     public void sendPurchaseConfirmation(String ticketPurchase) throws JsonProcessingException {
 
         BrokerMessage message = objectMapper.readValue(ticketPurchase, BrokerMessage.class);
