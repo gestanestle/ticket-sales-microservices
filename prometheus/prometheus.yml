@@ -30,7 +30,7 @@ scrape_configs:
         - event-command:8081
         - event-indexer:8086
         - ticket:8082
-        - userprofile:8084
+        - account:8084
         - notification:8085
   - job_name: postgres-exporter
     static_configs:

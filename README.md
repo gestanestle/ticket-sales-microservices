@@ -278,16 +278,16 @@ For Ticket Service, it will be as follows: </br>
 │                           ├───data
 │                           ├───repository
 │                           └───service
-└───userprofile
+└───account
     └───src
         ├───main
         │   ├───java
         │   │   └───com
         │   │       └───krimo
-        │   │           └───userprofile
+        │   │           └───account
         │   │               ├───config
         │   │               ├───controller
-        │   │               ├───domain
+        │   │               ├───model
         │   │               ├───dto
         │   │               ├───repository
         │   │               └───service
@@ -299,7 +299,7 @@ For Ticket Service, it will be as follows: </br>
             └───java
                 └───com
                     └───krimo
-                        └───userprofile
+                        └───account
 
 ```
 

@@ -7,17 +7,17 @@
     <groupId>com.krimo</groupId>
     <artifactId>ticket-sales-microservices</artifactId>
     <packaging>pom</packaging>
-    <version>2.0</version>
+    <version>3.0</version>
 
     <modules>
+        <module>account-service</module>
         <module>api-gateway</module>
-        <module>eureka</module>
-        <module>event-command</module>
-        <module>event-indexer</module>
-        <module>event-query</module>
-        <module>ticket</module>
-        <module>userprofile</module>
-        <module>notification</module>
+        <module>eureka-server</module>
+        <module>event-command-service</module>
+        <module>event-indexer-service</module>
+        <module>event-query-service</module>
+        <module>notification-service</module>
+        <module>ticket-service</module>
     </modules>
 
     <properties>
@@ -31,7 +31,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.7.5</version>
+                <version>3.1.2</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -67,6 +67,25 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
             <version>1.10.5</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.data</groupId>-->
+<!--            <artifactId>spring-data-jpa</artifactId>-->
+<!--            <version>3.2.0</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-data-jpa</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.google.guava</groupId>-->
+<!--            <artifactId>guava</artifactId>-->
+<!--            <version>31.1-jre</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-netflix-eureka-client</artifactId>-->
+<!--        </dependency>-->
     </dependencies>
 
 
@@ -76,15 +95,15 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.7.5</version>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
+                <version>3.1.2</version>
+<!--                <configuration>-->
+<!--                    <excludes>-->
+<!--                        <exclude>-->
+<!--                            <groupId>org.projectlombok</groupId>-->
+<!--                            <artifactId>lombok</artifactId>-->
+<!--                        </exclude>-->
+<!--                    </excludes>-->
+<!--                </configuration>-->
             </plugin>
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>

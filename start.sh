@@ -71,4 +71,4 @@ echo "Debezium is ready! Running curl..."
 # Register connector for event table
 curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/cdc-event.json
 # Register connector for the outbox table
-curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/cdc-outbox.json
+curl -X POST localhost:8083/connectors -H "Content-Type: application/json" -d @./connectors/outbox-event.json
