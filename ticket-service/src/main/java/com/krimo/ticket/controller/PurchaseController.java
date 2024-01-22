@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -25,7 +24,7 @@ public class PurchaseController {
         return new ResponseEntity<>(ResponseBody.of(
                 "Purchase successful",
                 HttpStatus.CREATED,
-                Map.of("data", id)
+                id
         ), HttpStatus.CREATED);
     }
 
@@ -35,7 +34,7 @@ public class PurchaseController {
         return new ResponseEntity<>(ResponseBody.of(
                 "Purchase successful",
                 HttpStatus.OK,
-                Map.of("data", purchase)
+                purchase
         ), HttpStatus.OK);
     }
 

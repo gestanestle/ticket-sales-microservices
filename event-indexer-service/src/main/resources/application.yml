@@ -1,6 +1,8 @@
 spring:
   application:
     name: event-indexer
+  main:
+    web-application-type: none
 
   # Kafka
   kafka:
@@ -26,6 +28,13 @@ eureka:
     prefer-ip-address: true
     hostname: localhost
 
+# Logger configuration
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+  level:
+    org.springframework: debug
+
 # Monitoring
 management:
   endpoints:
@@ -38,9 +47,3 @@ management:
   health:
     elasticsearch:
       enabled: false
-
-# Logger configuration
-logging:
-  level:
-    org:
-      springframework: info

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 public record BrokerMessage(
-        Long id,
+        Long event_id,
         String name,
         String banner,
 

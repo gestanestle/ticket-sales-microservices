@@ -39,7 +39,7 @@ public class EventIndexerService {
 
         if (msg.isDeleted()) {
             try {
-                esClient.delete(new DeleteRequest.Builder().index(IDX).id(String.valueOf(msg.id())).build());
+                esClient.delete(new DeleteRequest.Builder().index(IDX).id(String.valueOf(msg.event_id())).build());
             } catch (IOException e) {
                 logger.debug("UNABLE TO DELETE RECORD: \n" + e);
             }
@@ -50,7 +50,7 @@ public class EventIndexerService {
 
         IndexRequest<Event> request = IndexRequest.of(i -> i
                 .index(IDX)
-                .id(String.valueOf(event.id()))
+                .id(String.valueOf(event.event_id()))
                 .document(event)
         );
 
@@ -64,7 +64,7 @@ public class EventIndexerService {
 
     private Event mapToEvent(BrokerMessage msg) {
         return new Event(
-                msg.id(), msg.name(), msg.banner(), msg.description(), msg.venue(),
+                msg.event_id(), msg.name(), msg.banner(), msg.description(), msg.venue(),
                 String.valueOf(msg.startDateTime()), String.valueOf(msg.endDateTime()),
                 msg.organizer(), msg.tags(), msg.status()
         );

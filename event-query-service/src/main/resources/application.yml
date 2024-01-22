@@ -48,7 +48,6 @@ management:
 # Logger configuration
 logging:
   pattern:
-    console: "%d %-5level %logger : %msg%n"
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   level:
-    org:
-      springframework: info
+    org.springframework: debug

@@ -30,8 +30,10 @@ servers:
 
 # Logger configuration
 logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   level:
-    org.springframework: info
+    org.springframework: debug
 
 # Server configuration
 server:
@@ -50,9 +52,6 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://${eureka.instance.hostname}:8761/eureka
-
-userprofile:
-  service_url: http://localhost:8084
 
 # Monitoring
 management:

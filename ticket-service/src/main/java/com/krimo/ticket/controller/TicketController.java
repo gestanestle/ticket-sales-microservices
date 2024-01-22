@@ -8,8 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("api/v3")
 @RequiredArgsConstructor
@@ -23,7 +21,7 @@ public class TicketController {
         return new ResponseEntity<>(ResponseBody.of(
                 "Ticket successfully defined.",
                 HttpStatus.CREATED,
-                Map.of("data", id)
+                id
         ), HttpStatus.CREATED);
     }
 
@@ -32,7 +30,7 @@ public class TicketController {
         return new ResponseEntity<>(ResponseBody.of(
                 "Event tickets successfully retrieved.",
                 HttpStatus.OK,
-                Map.of("data", ticketService.getTicketsByEvent(id))
+                ticketService.getTicketsByEvent(id)
         ), HttpStatus.OK);
     }
 
@@ -41,7 +39,7 @@ public class TicketController {
         return new ResponseEntity<>(ResponseBody.of(
                 "Ticket successfully retrieved.",
                 HttpStatus.OK,
-                Map.of("data", ticketService.getTicket(id))
+                ticketService.getTicket(id)
         ), HttpStatus.OK);
     }
 

@@ -21,8 +21,7 @@ public class EventCommandController {
     public ResponseEntity<ResponseObject> createEvent(@RequestBody EventDTO eventDTO) {
         String message = "Event successfully created.";
         Long eventId = eventCommandService.createEvent(eventDTO);
-        Object data = Map.of("eventId", eventId);
-        return new ResponseEntity<>(ResponseObject.of(message, HttpStatus.CREATED, data), HttpStatus.CREATED);
+        return new ResponseEntity<>(ResponseObject.of(message, HttpStatus.CREATED, eventId), HttpStatus.CREATED);
     }
 
     @PutMapping(path = "{eventId}")

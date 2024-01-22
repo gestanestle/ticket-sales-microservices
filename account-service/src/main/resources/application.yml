@@ -1,6 +1,6 @@
 spring:
   application:
-    name: account
+    name: account-service
 
   flyway:
     enabled: false
@@ -24,6 +24,11 @@ spring:
       hibernate:
         format_sql: true
 
+# Redis
+redis:
+  host: localhost
+  port: 6379
+
 # Postgres hostname
 postgres:
   hostname: localhost
@@ -31,9 +36,9 @@ postgres:
 # Logger configuration
 logging:
   pattern:
-    console: "%d %-5level %logger : %msg%n"
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   level:
-    org.springframework: info
+    org.springframework: debug
     org.hibernate.stat: debug
     org.hibernate.sql: debug
     org.hibernate.type.descriptor.sql.BasicBinder: trace
@@ -59,10 +64,13 @@ eureka:
 # API Docs
 springdoc:
   api-docs:
-    path: /api/v2/user-profiles/docs
+    path: /api/v3/accounts/docs
 
 # Monitoring
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:

@@ -1,15 +1,15 @@
 package com.krimo.ticket.service;
 
 import com.krimo.ticket.data.MockData;
-import com.krimo.ticket.dto.PurchaseEvent;
 import com.krimo.ticket.dto.PurchaseRequest;
 import com.krimo.ticket.exception.ApiRequestException;
+import com.krimo.ticket.models.Event;
 import com.krimo.ticket.models.Purchase;
 import com.krimo.ticket.models.PurchaseStatus;
 import com.krimo.ticket.models.Ticket;
+import com.krimo.ticket.repository.EventRepository;
 import com.krimo.ticket.repository.PurchaseRepository;
 import com.krimo.ticket.repository.TicketRepository;
-import com.krimo.ticket.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,14 +21,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
@@ -38,24 +34,27 @@ class PurchaseServiceImplTest {
     @Mock private KafkaTemplate<String, String> kafka;
     @Mock private PurchaseRepository purchaseRepository;
     @Mock private TicketRepository ticketRepository;
+    @Mock private EventRepository eventRepository;
     @InjectMocks @Autowired
     private PurchaseServiceImpl purchaseService;
 
     @Captor
     ArgumentCaptor<Purchase> purchaseCaptor;
 
+    Event event = MockData.eventInit();
     Ticket ticket = MockData.ticketInit();
     PurchaseRequest req = MockData.purchaseReq();
     Purchase purchase = MockData.purchaseInit();
 
     @BeforeEach
     void setUp() {
-        purchaseService = new PurchaseServiceImpl(kafka, purchaseRepository, ticketRepository);
+        purchaseService = new PurchaseServiceImpl(kafka, purchaseRepository, ticketRepository, eventRepository);
     }
 
     @Test
     void shouldCreatePurchase() {
         when(ticketRepository.findById(anyLong())).thenReturn(Optional.of(ticket));
+        when(eventRepository.findById(anyLong())).thenReturn(Optional.of(event));
         when(purchaseRepository.saveAndFlush(purchaseCaptor.capture()))
                 .thenReturn(purchase);
 
@@ -63,8 +62,19 @@ class PurchaseServiceImplTest {
 
         verify(purchaseRepository, times(req.quantity())).saveAndFlush(any(Purchase.class));
         verify(ticketRepository, times(3)).findById(anyLong());
+        verify(ticketRepository, times(1)).save(any(Ticket.class));
         verify(kafka, times(1)).send(anyString(), anyString());
         assertThat(purchaseCaptor.getValue()).usingRecursiveComparison().ignoringFields("purchaseId", "ticketCode", "createdAt").isEqualTo(purchase);
+    }
+
+    @Test
+    void shouldErrorWhenEventInactive() {
+        when(ticketRepository.findById(anyLong())).thenReturn(Optional.of(ticket));
+        when(eventRepository.findById(anyLong())).thenReturn(null);
+
+        assertThatThrownBy( () -> purchaseService.createPurchase(req))
+                .isInstanceOf(ApiRequestException.class).hasMessageContaining("Event is currently inactive.");
+
     }
 
     @Test

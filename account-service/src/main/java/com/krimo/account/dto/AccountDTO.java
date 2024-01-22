@@ -1,5 +1,7 @@
 package com.krimo.account.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -9,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AccountDTO {
 
     private Long id;

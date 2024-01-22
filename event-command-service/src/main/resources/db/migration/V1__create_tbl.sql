@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS public.event (
         event_id BIGSERIAL PRIMARY KEY,
-        event_name VARCHAR(255) UNIQUE ,
+        name VARCHAR(255) UNIQUE ,
         banner VARCHAR(255),
         description VARCHAR(255),
         venue VARCHAR(255),

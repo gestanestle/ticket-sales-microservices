@@ -11,21 +11,18 @@ import java.util.Set;
 @Getter @Setter
 @Builder
 @Entity
-@Table(name = "event", indexes = @Index(name = "idx_event_name", columnList = "event_name"))
+@Table(name = "event", indexes = @Index(name = "idx_event_name", columnList = "name"))
 public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "event_id")
     private Long id;
-    @Column(name = "event_name")
     private String name;
     private String banner;
     private String description;
     private String venue;
-    @Column(name = "start_datetime")
     private LocalDateTime startDateTime;
-    @Column(name = "end_datetime")
     private LocalDateTime endDateTime;
     private String organizer;
     @ElementCollection

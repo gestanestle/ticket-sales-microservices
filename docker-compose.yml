@@ -79,6 +79,14 @@ services:
     networks:
       - tsm
 
+  zipkin-server:
+    image:  openzipkin/zipkin:3.0.3
+    container_name: zipkin-server
+    ports:
+      - "9411:9411"
+    networks:
+      - tsm
+
   prometheus:
     image: prom/prometheus:v2.45.0
     container_name: prometheus
@@ -182,12 +190,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     links:
       - eureka
     restart: always
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - POSTGRES_HOSTNAME=postgres
+      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
     healthcheck:
       test: "curl --fail --silent localhost:8084/actuator/health | grep UP || exit 1"
       interval: 20s
@@ -217,6 +228,7 @@ services:
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - POSTGRES_HOSTNAME=postgres
+      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
 
   event-indexer-service:
     image: gestanestle/event-indexer:3.0
@@ -233,6 +245,7 @@ services:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - ELASTICSEARCH_HOSTNAME=elasticsearch
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
+      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
 
   event-query-service:
     image: gestanestle/event-query:3.0
@@ -250,6 +263,7 @@ services:
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - ELASTICSEARCH_HOSTNAME=elasticsearch
+      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
 
   notification-service:
     image: gestanestle/notification:3.0
@@ -257,15 +271,17 @@ services:
     networks:
       - tsm
     depends_on:
-      - kafka
-      - redis
+      kafka:
+        condition: service_healthy
     links:
       - eureka
     restart: always
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
-      - SPRING_REDIS_HOST=redis
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
+      - SERVERS_ACCOUNT-SERVICE=http://account-service:8084
+      - SERVERS_EVENT-SERVICE=http://event-query-service:8080
+      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
 
   ticket-service:
     image: gestanestle/ticket:3.0
@@ -277,22 +293,19 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      event-command:
-        condition: service_healthy
     links:
       - eureka
     restart: always
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - POSTGRES_HOSTNAME=postgres
+      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
     healthcheck:
       test: "curl --fail --silent localhost:8082/actuator/health | grep UP || exit 1"
       interval: 20s
       timeout: 5s
       retries: 5
       start_period: 40s
-
-
 
 networks:
   tsm:

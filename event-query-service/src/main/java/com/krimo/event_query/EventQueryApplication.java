@@ -5,9 +5,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
-@EnableEurekaClient
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class })
 @OpenAPIDefinition(info = @Info(title = "Event Query Service API", version = "3.0"))
 public class EventQueryApplication {

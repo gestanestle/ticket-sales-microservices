@@ -4,15 +4,15 @@ import com.krimo.account.dto.AccountDTO;
 import com.krimo.account.dto.ResponseObject;
 import com.krimo.account.service.AccountService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequiredArgsConstructor
+@RequiredArgsConstructor @Slf4j
 @RequestMapping("api/v3/accounts")
 public class AccountController {
 
@@ -23,18 +23,21 @@ public class AccountController {
         Long id = accountService.createAccount(dto);
         return new ResponseEntity<>(ResponseObject.of(
                 "Account successfully created.",
-                HttpStatus.CREATED,
-                Map.of("data", id)
+                201,
+                id
         ), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<ResponseObject> getAccounts() {
-        List<AccountDTO> accounts = accountService.getAccounts();
+    public ResponseEntity<ResponseObject> getAccounts(
+            @RequestParam("pageNo") int pageNo,
+            @RequestParam("pageSize") int pageSize
+    ) {
+        List<AccountDTO> accounts = accountService.getAccounts(pageNo, pageSize);
         return new ResponseEntity<>(ResponseObject.of(
                 "Accounts successfully retrieved.",
-                HttpStatus.OK,
-                Map.of("data", accounts)
+                200,
+                accounts
         ), HttpStatus.OK);
     }
 
@@ -43,8 +46,8 @@ public class AccountController {
         AccountDTO account = accountService.getAccount(id);
         return new ResponseEntity<>(ResponseObject.of(
                 "Account successfully retrieved.",
-                HttpStatus.OK,
-                Map.of("data", account)
+                200,
+                account
         ), HttpStatus.OK);
     }
 
@@ -54,7 +57,7 @@ public class AccountController {
         accountService.updateAccount(id, dto);
         return new ResponseEntity<>(ResponseObject.of(
                 "Account successfully updated.",
-                HttpStatus.OK,
+                200,
                 null
         ), HttpStatus.OK);
     }
@@ -64,7 +67,7 @@ public class AccountController {
         accountService.deleteAccount(id);
         return new ResponseEntity<>(ResponseObject.of(
                 "Account successfully deleted.",
-                HttpStatus.OK,
+                200,
                 null
         ), HttpStatus.OK);
     }
