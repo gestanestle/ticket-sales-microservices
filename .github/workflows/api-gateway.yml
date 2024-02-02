@@ -1,11 +1,11 @@
-name: Event Command Service CI
+name: API Gateway CI
 
 on:
   push:
     branches:
       - krimaster
     paths:
-      - "event-command-service/src/**"
+      - "api-gateway/src/**"
 
 jobs:
   build:
@@ -24,6 +24,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.PASSWORD }}
       - name: Build and Push
-        run: mvn clean package jib:build -pl event-command-service
+        run: mvn clean package jib:build -pl api-gateway
         env:
           DOCKER_USERNAME: ${{ github.actor }}

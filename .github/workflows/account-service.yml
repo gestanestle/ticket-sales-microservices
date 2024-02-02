@@ -1,4 +1,4 @@
-name: User Service CI
+name: Account Service CI
 
 on:
   push:

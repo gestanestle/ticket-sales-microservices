@@ -1,11 +1,11 @@
-name: Event Command Service CI
+name: Eureka Server CI
 
 on:
   push:
     branches:
       - krimaster
     paths:
-      - "event-command-service/src/**"
+      - "eureka-server/src/**"
 
 jobs:
   build:
@@ -24,6 +24,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.PASSWORD }}
       - name: Build and Push
-        run: mvn clean package jib:build -pl event-command-service
+        run: mvn clean package jib:build -pl eureka-server
         env:
           DOCKER_USERNAME: ${{ github.actor }}

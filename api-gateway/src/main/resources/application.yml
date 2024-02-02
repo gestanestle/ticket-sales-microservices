@@ -19,34 +19,51 @@ spring:
           predicates:
           - Path=/eureka/**
 
-        - id: event-query
-          uri: lb://EVENT-QUERY
+        - id: account
+          uri: lb://ACCOUNT-SERVICE
           predicates:
-          - Path=/api/v2/events/**, /api/v2/event-query/**
+            - Path=/api/v3/accounts/**
+        - id: event-query
+          uri: lb://EVENT-QUERY-SERVICE
+          predicates:
+          - Path=/api/v3/events/**
           - Method=GET
         - id: event-command
-          uri: lb://EVENT-COMMAND
+          uri: lb://EVENT-COMMAND-SERVICE
           predicates:
-          - Path=/api/v2/events/**
+          - Path=/api/v3/events/**
           - Method=POST, PUT, PATCH, DELETE
-        - id: event-command-swagger
-          uri: lb://EVENT-COMMAND
-          predicates:
-          - Path=/api/v2/event-command/**
-          - Method=GET
         - id: ticket
-          uri: lb://TICKET
+          uri: lb://TICKET-SERVICE
           predicates:
-          - Path=/api/v2/tickets/**, /api/v2/event/**
-        - id: userprofile
-          uri: lb://USERPROFILE
+          - Path=/api/v3/event/**, /api/v3/tickets/**, /api/v3/purchases/**
+
+        - id: account-swagger
+          uri: lb://ACCOUNT-SERVICE
           predicates:
-          - Path=/api/v2/user-profiles/**
+            - Path=/account-service/swagger-ui**, /account-service/api-docs
+            - Method=GET
+        - id: event-query-swagger
+          uri: lb://EVENT-QUERY-SERVICE
+          predicates:
+            - Path=/event-query-service/swagger-ui**, /event-query-service/api-docs
+            - Method=GET
+        - id: event-command-swagger
+          uri: lb://EVENT-COMMAND-SERVICE
+          predicates:
+          - Path=/event-command-service/swagger-ui**, /event-command-service/api-docs
+          - Method=GET
+        - id: ticket-swagger
+          uri: lb://TICKET-SERVICE
+          predicates:
+            - Path=/ticket-service/swagger-ui**, /ticket-service/api-docs
+            - Method=GET
+
 
 # Logger configuration
 logging:
   pattern:
-    console: "%d %-5level %logger : %msg%n"
+    console: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   level:
     org.springframework: info
     org.hibernate: debug
@@ -70,6 +87,9 @@ eureka:
 
 # Monitoring
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:

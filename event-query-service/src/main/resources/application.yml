@@ -1,6 +1,6 @@
 spring:
   application:
-    name: event-query
+    name: event-query-service
 
 # ES Config
 elasticsearch:
@@ -30,10 +30,15 @@ eureka:
 # API Docs
 springdoc:
   api-docs:
-    path: /api/v3/event-query/api-docs
+    path: /event-query-service/api-docs
+  swagger-ui:
+    path: /event-query-service/swagger-ui
 
 # Monitoring
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:

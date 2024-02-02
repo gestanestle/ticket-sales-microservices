@@ -1,7 +1,7 @@
 # Spring Boot configuration
 spring:
   application:
-    name: ticket
+    name: ticket-service
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -68,10 +68,15 @@ eureka:
 # API Docs
 springdoc:
   api-docs:
-    path: /api/v3/tickets/api-docs
+    path: /ticket-service/api-docs
+  swagger-ui:
+    path: /ticket-service/swagger-ui
 
 # Monitoring
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:

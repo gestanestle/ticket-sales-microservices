@@ -113,7 +113,7 @@ which then visualizes the data in the dashboards. The endpoints are accessible t
 
 ### Distributed Tracing
 
------
+![image](./static/zipkin.JPG)
 
 ## RUNNING THE APPLICATIONS
 
@@ -145,20 +145,15 @@ http://localhost:9000/api/v3/accounts
 ### API Documentation
 The services User Profile, Event, and Ticket have their own OpenAPI specifications. To access the API Docs, go to the following URLs:
 
-```
-http://localhost:9000/api/v3/accounts/swagger/ui
-```
-```
-http://localhost:9000/api/v3/event-command/swagger/ui
-```
-```
-http://localhost:9000/api/v3/event-query/swagger/ui
-```
-```
-http://localhost:9000/api/v3/tickets/swagger/ui
-```
+| Service               | Swagger UI                                                   | API Docs                                                   |
+|-----------------------|--------------------------------------------------------------|------------------------------------------------------------|
+| Account Service       | ```http://localhost:9000/account-service/swagger-ui```       | ```http://localhost:9000/account-service/api-docs```       |
+| Event Command Service | ```http://localhost:9000/event-command-service/swagger-ui``` | ```http://localhost:9000/event-command-service/api-docs``` |
+| Event Query Service   | ```http://localhost:9000/event-query-service/swagger-ui```   | ```http://localhost:9000/event-query-service/api-docs```   |
+| Notification Service  | ```http://localhost:9000/notification-service/swagger-ui```  | ```http://localhost:9000/notification-service/api-docs```  |
+| Ticket Service        | ```http://localhost:9000/ticket-service/swagger-ui```        | ```http://localhost:9000/ticket-service/api-docs```        |
 
-For Ticket Service, it will be as follows: </br>
+For Account Service, it will be as follows: </br>
 
 ![image](./static/swagger.JPG)
 

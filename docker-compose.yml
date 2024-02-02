@@ -16,8 +16,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-#    environment:
-#      - POSTGRES_PASSWORD=postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
     networks:
       - tsm
 
@@ -79,13 +79,14 @@ services:
     networks:
       - tsm
 
-  zipkin-server:
+  zipkin:
     image:  openzipkin/zipkin:3.0.3
-    container_name: zipkin-server
+    container_name: zipkin
     ports:
       - "9411:9411"
     networks:
       - tsm
+    command: --logging.level.zipkin2=TRACE
 
   prometheus:
     image: prom/prometheus:v2.45.0
@@ -159,7 +160,7 @@ services:
       - tsm
 
   api-gateway:
-    image: gestanestle/api-gateway:2.0.0
+    image: gestanestle/api-gateway:3.0
     container_name: api-gateway
     links:
       - eureka
@@ -172,7 +173,7 @@ services:
       - EUREKA_INSTANCE_HOSTNAME=eureka
 
   eureka:
-    image: gestanestle/eureka:2.0.0
+    image: gestanestle/eureka3.0
     container_name: eureka
     networks:
       - tsm
@@ -198,7 +199,6 @@ services:
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - POSTGRES_HOSTNAME=postgres
-      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
     healthcheck:
       test: "curl --fail --silent localhost:8084/actuator/health | grep UP || exit 1"
       interval: 20s
@@ -228,7 +228,6 @@ services:
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - POSTGRES_HOSTNAME=postgres
-      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
 
   event-indexer-service:
     image: gestanestle/event-indexer:3.0
@@ -245,7 +244,6 @@ services:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - ELASTICSEARCH_HOSTNAME=elasticsearch
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
-      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
 
   event-query-service:
     image: gestanestle/event-query:3.0
@@ -263,7 +261,6 @@ services:
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - ELASTICSEARCH_HOSTNAME=elasticsearch
-      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
 
   notification-service:
     image: gestanestle/notification:3.0
@@ -281,7 +278,6 @@ services:
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
       - SERVERS_ACCOUNT-SERVICE=http://account-service:8084
       - SERVERS_EVENT-SERVICE=http://event-query-service:8080
-      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
 
   ticket-service:
     image: gestanestle/ticket:3.0
@@ -299,7 +295,6 @@ services:
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - POSTGRES_HOSTNAME=postgres
-      - SPRING_ZIPKIN_BASE-URL=http://zipkin-server:9411
     healthcheck:
       test: "curl --fail --silent localhost:8082/actuator/health | grep UP || exit 1"
       interval: 20s

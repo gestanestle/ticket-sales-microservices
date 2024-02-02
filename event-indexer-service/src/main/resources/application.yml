@@ -1,6 +1,6 @@
 spring:
   application:
-    name: event-indexer
+    name: event-indexer-service
   main:
     web-application-type: none
 
@@ -37,6 +37,9 @@ logging:
 
 # Monitoring
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:

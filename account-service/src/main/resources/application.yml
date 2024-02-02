@@ -64,7 +64,9 @@ eureka:
 # API Docs
 springdoc:
   api-docs:
-    path: /api/v3/accounts/docs
+    path: /account-service/api-docs
+  swagger-ui:
+      path: /account-service/swagger-ui
 
 # Monitoring
 management:

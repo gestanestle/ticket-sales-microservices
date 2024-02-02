@@ -1,7 +1,7 @@
 # Spring Boot configuration
 spring:
   application:
-    name: event-command
+    name: event-command-service
 
   flyway:
     enabled: true
@@ -69,10 +69,15 @@ eureka:
 # API Docs
 springdoc:
   api-docs:
-    path: /api/v3/event-command/api-docs
+    path: /event-command-service/api-docs
+  swagger-ui:
+    path: /event-command-service/swagger-ui
 
 # Monitoring
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:
