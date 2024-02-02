@@ -1,0 +1,82 @@
+spring:
+  application:
+    name: account-service
+
+  flyway:
+    enabled: false
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${postgres.hostname}:5432/account_db
+    username: accountmanager
+    password: postgres
+
+  # JPA properties
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    generate-ddl: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Redis
+redis:
+  host: localhost
+  port: 6379
+
+# Postgres hostname
+postgres:
+  hostname: localhost
+
+# Logger configuration
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+  level:
+    org.springframework: debug
+    org.hibernate.stat: debug
+    org.hibernate.sql: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+
+# Server configuration
+server:
+  port: 8084
+  error:
+    include-binding-errors: always
+    include-message: always
+
+# Eureka
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka
+
+# API Docs
+springdoc:
+  api-docs:
+    path: /account-service/api-docs
+  swagger-ui:
+      path: /account-service/swagger-ui
+
+# Monitoring
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

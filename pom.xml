@@ -7,17 +7,17 @@
     <groupId>com.krimo</groupId>
     <artifactId>ticket-sales-microservices</artifactId>
     <packaging>pom</packaging>
-    <version>2.0</version>
+    <version>3.0</version>
 
     <modules>
+        <module>account-service</module>
         <module>api-gateway</module>
-        <module>eureka</module>
-        <module>event-command</module>
-        <module>event-indexer</module>
-        <module>event-query</module>
-        <module>ticket</module>
-        <module>userprofile</module>
-        <module>notification</module>
+        <module>eureka-server</module>
+        <module>event-command-service</module>
+        <module>event-indexer-service</module>
+        <module>event-query-service</module>
+        <module>notification-service</module>
+        <module>ticket-service</module>
     </modules>
 
     <properties>
@@ -31,14 +31,14 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.7.5</version>
+                <version>3.1.2</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>2021.0.5</version>
+                <version>2022.0.3</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -49,14 +49,21 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-tracing-bom</artifactId>
+                <version>1.1.6</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.6.11</version>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -65,7 +72,18 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.10.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter-brave</artifactId>
         </dependency>
     </dependencies>
 
@@ -76,15 +94,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.7.5</version>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
+                <version>3.1.2</version>
             </plugin>
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>

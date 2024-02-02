@@ -21,26 +21,12 @@ services:
     networks:
       - tsm
 
-  zookeeper:
-    container_name: zookeeper
-    image: confluentinc/cp-zookeeper:7.4.0
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    restart: always
-    ports:
-      - "2181:2181"
-    networks:
-      - tsm
-
   kafka:
     restart: always
     container_name: kafka
     image: confluentinc/cp-kafka:7.4.0
     ports:
       - "9092:9092"
-    depends_on:
-      - zookeeper
     healthcheck:
       test: ["CMD", "nc", "-vz", "localhost", "9092"]
       start_period: 15s
@@ -50,21 +36,26 @@ services:
     hostname: kafka
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://kafka:29093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_NODE_ID: 1
+      CLUSTER_ID: "iQsUL1SRTUbIdzWbBMmhVg=="
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8090
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
     networks:
       - tsm
 
-  debezium-connect:
-    container_name: debezium-connect
+  debezium:
+    container_name: debezium
     image: debezium/connect:2.3
     ports:
       - "8083:8083"
@@ -87,6 +78,15 @@ services:
       - "6379:6379"
     networks:
       - tsm
+
+  zipkin:
+    image:  openzipkin/zipkin:3.0.3
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - tsm
+    command: --logging.level.zipkin2=TRACE
 
   prometheus:
     image: prom/prometheus:v2.45.0
@@ -160,7 +160,7 @@ services:
       - tsm
 
   api-gateway:
-    image: gestanestle/api-gateway:2.0.0
+    image: gestanestle/api-gateway:3.0
     container_name: api-gateway
     links:
       - eureka
@@ -173,7 +173,7 @@ services:
       - EUREKA_INSTANCE_HOSTNAME=eureka
 
   eureka:
-    image: gestanestle/eureka:2.0.0
+    image: gestanestle/eureka3.0
     container_name: eureka
     networks:
       - tsm
@@ -181,9 +181,34 @@ services:
       - "8761:8761"
     restart: always
 
-  event-command:
-    image: gestanestle/event-command:3.0.0
-    container_name: event-command
+  account-service:
+    image: gestanestle/account:3.0
+    container_name: account-service
+    ports:
+      - "8084:8084"
+    networks:
+      - tsm
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    links:
+      - eureka
+    restart: always
+    environment:
+      - EUREKA_INSTANCE_HOSTNAME=eureka
+      - POSTGRES_HOSTNAME=postgres
+    healthcheck:
+      test: "curl --fail --silent localhost:8084/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  event-command-service:
+    image: gestanestle/event-command:3.0
+    container_name: event-command-service
     ports:
       - "8081:8081"
     healthcheck:
@@ -204,9 +229,9 @@ services:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - POSTGRES_HOSTNAME=postgres
 
-  event-indexer:
-    image: gestanestle/event-indexer:3.0.0
-    container_name: event-indexer
+  event-indexer-service:
+    image: gestanestle/event-indexer:3.0
+    container_name: event-indexer-service
     networks:
       - tsm
     depends_on:
@@ -220,9 +245,9 @@ services:
       - ELASTICSEARCH_HOSTNAME=elasticsearch
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
 
-  event-query:
-    image: gestanestle/event-query:3.0.0
-    container_name: event-query
+  event-query-service:
+    image: gestanestle/event-query:3.0
+    container_name: event-query-service
     ports:
       - "8080:8080"
     networks:
@@ -237,33 +262,32 @@ services:
       - EUREKA_INSTANCE_HOSTNAME=eureka
       - ELASTICSEARCH_HOSTNAME=elasticsearch
 
-  notification:
-    image: gestanestle/notification:2.0.0
-    container_name: notification
+  notification-service:
+    image: gestanestle/notification:3.0
+    container_name: notification-service
     networks:
       - tsm
     depends_on:
-      - kafka
-      - redis
+      kafka:
+        condition: service_healthy
     links:
       - eureka
     restart: always
     environment:
       - EUREKA_INSTANCE_HOSTNAME=eureka
-      - SPRING_REDIS_HOST=redis
       - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
+      - SERVERS_ACCOUNT-SERVICE=http://account-service:8084
+      - SERVERS_EVENT-SERVICE=http://event-query-service:8080
 
-  ticket:
-    image: gestanestle/ticket:2.0.1
-    container_name: ticket
+  ticket-service:
+    image: gestanestle/ticket:3.0
+    container_name: ticket-service
     ports:
       - "8082:8082"
     networks:
       - tsm
     depends_on:
       postgres:
-        condition: service_healthy
-      event-command:
         condition: service_healthy
     links:
       - eureka
@@ -278,35 +302,16 @@ services:
       retries: 5
       start_period: 40s
 
-  userprofile:
-    image: gestanestle/userprofile:2.0.0
-    container_name: userprofile
-    ports:
-      - "8084:8084"
-    networks:
-      - tsm
-    depends_on:
-      postgres:
-        condition: service_healthy
-    links:
-      - eureka
-    restart: always
-    environment:
-      - EUREKA_INSTANCE_HOSTNAME=eureka
-      - POSTGRES_HOSTNAME=postgres
-    healthcheck:
-      test: "curl --fail --silent localhost:8084/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
-
 networks:
   tsm:
     name: tsm
 
 volumes:
   postgres_data:
+    name: postgres_data
   elastic_data:
+    name: elastic_data
   prometheus_data:
+    name: prometheus_data
   grafana_data:
+    name: grafana_data

@@ -1,0 +1,67 @@
+# Spring Boot configuration
+spring:
+  application:
+    name: notification-service
+
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+
+  # Mailer
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: eurhainez@gmail.com
+    password: touqamftsvurcwaj
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# EXTERNAL SERVICES
+servers:
+ account-service: http://localhost:8084
+ event-service: http://localhost:8080
+
+
+# Logger configuration
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+  level:
+    org.springframework: debug
+
+# Server configuration
+server:
+  port: 8085
+  error:
+    include-binding-errors: always
+    include-message: always
+
+# Eureka
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka
+
+# Monitoring
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

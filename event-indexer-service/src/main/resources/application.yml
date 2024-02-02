@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: event-indexer-service
+  main:
+    web-application-type: none
+
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+
+# ES config
+elasticsearch:
+  hostname: localhost
+  server: http://${elasticsearch.hostname}:9200
+  user: event_indexer
+  pass: elastic
+
+# Eureka
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+
+# Logger configuration
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+  level:
+    org.springframework: debug
+
+# Monitoring
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  health:
+    elasticsearch:
+      enabled: false
