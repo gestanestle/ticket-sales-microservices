@@ -1,6 +1,15 @@
 spring:
   application:
     name: api-gateway
+
+  main:
+    web-application-type: reactive
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://localhost:8443/realms/TSM%20Realm
   cloud:
     gateway:
       discovery:
@@ -58,7 +67,6 @@ spring:
           predicates:
             - Path=/ticket-service/swagger-ui**, /ticket-service/api-docs
             - Method=GET
-
 
 # Logger configuration
 logging:

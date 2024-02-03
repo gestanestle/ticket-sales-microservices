@@ -155,7 +155,24 @@ services:
       interval: 30s
       timeout: 10s
       retries: 50
+    networks:
+      - tsm
 
+  keycloak:
+    container_name: keycloak
+    image: gestanestle/keycloak:1.0
+    build:
+      context: keycloak
+      args:
+        DB_HOST: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8443:8443"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
     networks:
       - tsm
 

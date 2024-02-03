@@ -1,6 +1,14 @@
+CREATE DATABASE auth_db;
 CREATE DATABASE account_db;
 CREATE DATABASE event_db;
 CREATE DATABASE ticket_db;
+
+\c auth_db
+CREATE USER keycloak WITH ENCRYPTED PASSWORD 'postgres';
+GRANT ALL PRIVILEGES ON DATABASE auth_db TO keycloak;
+REVOKE ALL PRIVILEGES ON SCHEMA public FROM keycloak;
+GRANT USAGE ON SCHEMA public TO keycloak;
+GRANT ALL PRIVILEGES ON SCHEMA public TO keycloak;
 
 \c account_db
 CREATE USER accountmanager WITH ENCRYPTED PASSWORD 'postgres'; 
