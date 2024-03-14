@@ -38,8 +38,8 @@ class PurchaseServiceImplTest {
     @InjectMocks @Autowired
     private PurchaseServiceImpl purchaseService;
 
-    @Captor
-    ArgumentCaptor<Purchase> purchaseCaptor;
+    @Captor ArgumentCaptor<Purchase> purchaseCaptor;
+    @Captor ArgumentCaptor<Ticket> ticketCaptor;
 
     Event event = MockData.eventInit();
     Ticket ticket = MockData.ticketInit();
@@ -60,17 +60,21 @@ class PurchaseServiceImplTest {
 
         purchaseService.createPurchase(req);
 
+        ticket.setQtySold(req.quantity());
+        purchase.setTicket(ticket);
+
         verify(purchaseRepository, times(req.quantity())).saveAndFlush(any(Purchase.class));
-        verify(ticketRepository, times(3)).findById(anyLong());
-        verify(ticketRepository, times(1)).save(any(Ticket.class));
+        verify(ticketRepository, times(2)).findById(anyLong());
+        verify(ticketRepository, times(1)).save(ticketCaptor.capture());
         verify(kafka, times(1)).send(anyString(), anyString());
         assertThat(purchaseCaptor.getValue()).usingRecursiveComparison().ignoringFields("purchaseId", "ticketCode", "createdAt").isEqualTo(purchase);
     }
 
     @Test
     void shouldErrorWhenEventInactive() {
+        event.setIsActive(false);
         when(ticketRepository.findById(anyLong())).thenReturn(Optional.of(ticket));
-        when(eventRepository.findById(anyLong())).thenReturn(null);
+        when(eventRepository.findById(anyLong())).thenReturn(Optional.of(event));
 
         assertThatThrownBy( () -> purchaseService.createPurchase(req))
                 .isInstanceOf(ApiRequestException.class).hasMessageContaining("Event is currently inactive.");

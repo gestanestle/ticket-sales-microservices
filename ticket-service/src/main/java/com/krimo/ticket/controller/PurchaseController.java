@@ -22,7 +22,7 @@ public class PurchaseController {
     ResponseEntity<ResponseBody> purchaseTicket(@RequestBody PurchaseRequest request) {
         Set<Long> id = purchaseService.createPurchase(request);
         return new ResponseEntity<>(ResponseBody.of(
-                "Purchase successful",
+                "Purchase successful.",
                 HttpStatus.CREATED,
                 id
         ), HttpStatus.CREATED);
@@ -32,7 +32,7 @@ public class PurchaseController {
     ResponseEntity<ResponseBody> getTicket(@PathVariable("purchaseId") Long id) {
         Purchase purchase =  purchaseService.getPurchase(id);
         return new ResponseEntity<>(ResponseBody.of(
-                "Purchase successful",
+                "Purchase details successfully retrieved.",
                 HttpStatus.OK,
                 purchase
         ), HttpStatus.OK);

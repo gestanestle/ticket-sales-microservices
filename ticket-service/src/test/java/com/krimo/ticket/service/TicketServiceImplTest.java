@@ -66,10 +66,8 @@ class TicketServiceImplTest {
 
     @Test
     void getTicketsByEvent() {
-        event.setTickets(Set.of(ticket));
         ticket.setTicketId(1L);
-        when(eventRepository.findById(anyLong())).thenReturn(Optional.of(event));
-        when(ticketRepository.getByEvent(any(Event.class))).thenReturn(List.of(ticket));
+        when(ticketRepository.getByEvent(anyLong())).thenReturn(List.of(ticket));
         assertThat(ticketService.getTicketsByEvent(1L)).isEqualTo(List.of(dto));
     }
 

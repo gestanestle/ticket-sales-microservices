@@ -51,8 +51,7 @@ class TicketServiceImpl implements TicketService {
 
     @Override
     public List<TicketDTO> getTicketsByEvent(Long id) {
-        Event event = eventRepository.findById(id).orElseThrow();
-        return ticketRepository.getByEvent(event).stream().map(this::mapToDTO).collect(Collectors.toList());
+        return ticketRepository.getByEvent(id).stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override

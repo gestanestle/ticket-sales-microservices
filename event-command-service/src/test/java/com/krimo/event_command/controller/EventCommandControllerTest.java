@@ -59,7 +59,7 @@ class EventCommandControllerTest {
         when(eventCommandService.createEvent(any(EventDTO.class))).thenReturn(1L);
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .post("http://localhost:8081/api/v2/events")
+                        .post("http://localhost:8081/api/v3/events")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(eventDtoJson)
                         .accept(MediaType.APPLICATION_JSON)
@@ -72,7 +72,7 @@ class EventCommandControllerTest {
     void updateEvent() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .put(String.format("http://localhost:8081/api/v2/events/%s", 1))
+                        .put(String.format("http://localhost:8081/api/v3/events/%s", 1))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(eventDtoJson)
                         .characterEncoding(StandardCharsets.UTF_8))
@@ -84,7 +84,7 @@ class EventCommandControllerTest {
     void deleteEvent() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .delete(String.format("http://localhost:8081/api/v2/events/%s", 1)))
+                        .delete(String.format("http://localhost:8081/api/v3/events/%s", 1)))
                 .andExpect(status().is(200))
                 .andExpect(jsonPath("$.message",  org.hamcrest.Matchers.is("Event successfully deleted.")));
     }
