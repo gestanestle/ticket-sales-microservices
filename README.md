@@ -103,6 +103,10 @@ The schema creation, versioning, and migrations are all managed by Flyway.
 ### Testing
 The services ```Account```, ```Event Command```, ```Ticket``` , and ```Notification``` are unit-tested with JUnit, Mockito, and MockMVC, and DB-integration tested with Test Containers.
 
+This project is also being actively checked with SonarLint integrated in the developer's IDE. 
+An analysis with SonarQube to would reveal the following: 
+![image](./static/sonar.JPG)
+
 ### Monitoring
 
 ![image](./static/grafana.png)
