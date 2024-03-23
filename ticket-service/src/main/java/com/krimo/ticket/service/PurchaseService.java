@@ -53,7 +53,7 @@ class PurchaseServiceImpl implements PurchaseService {
 
         // 2. Is event currently active?
         if (eventRepository.findById(ticket.getEvent().getEventId()).isPresent()
-                && !eventRepository.findById(ticket.getEvent().getEventId()).get().getIsActive())
+                && Boolean.TRUE.equals(!eventRepository.findById(ticket.getEvent().getEventId()).get().getIsActive()))
             throw new ApiRequestException(HttpStatus.BAD_REQUEST, "Event is currently inactive.");
 
         // 3. Is ticket sold out?

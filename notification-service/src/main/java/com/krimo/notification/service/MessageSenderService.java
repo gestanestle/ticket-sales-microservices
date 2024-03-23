@@ -21,7 +21,7 @@ class EmailMessageSenderServiceImpl implements MessageSenderService {
 
         final String msg =
                 """
-                        Congratulations! Your ticket purchase for %s is confirmed. 
+                        Congratulations! Your ticket purchase for %s is confirmed.\s
                    
                         
                         Thank you for choosing to be a part of this memorable experience. We can't wait to see you there!

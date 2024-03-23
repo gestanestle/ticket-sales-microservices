@@ -17,7 +17,7 @@ public class KafkaConsumerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
-    private final static String GROUP_ID =  "event-change-consumer-group";
+    private static final String GROUP_ID =  "event-change-consumer-group";
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {

@@ -1,7 +1,5 @@
 package com.krimo.event_query.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.LocalDateTime;
 import java.util.Set;
 

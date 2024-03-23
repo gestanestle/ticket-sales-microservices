@@ -14,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-
 
 public interface TicketService {
 
@@ -51,7 +49,7 @@ class TicketServiceImpl implements TicketService {
 
     @Override
     public List<TicketDTO> getTicketsByEvent(Long id) {
-        return ticketRepository.getByEvent(id).stream().map(this::mapToDTO).collect(Collectors.toList());
+        return ticketRepository.getByEvent(id).stream().map(this::mapToDTO).toList();
     }
 
     @Override

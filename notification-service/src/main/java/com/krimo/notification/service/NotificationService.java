@@ -19,9 +19,9 @@ import reactor.core.publisher.Mono;
 class NotificationService {
 
     @Value("${servers.account-service}")
-    private String ACCOUNT_SERVICE;
+    private String accountService;
     @Value("${servers.event-service}")
-    private String EVENT_SERVICE;
+    private String eventService;
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
@@ -35,13 +35,13 @@ class NotificationService {
 
         Mono<String> emailMono = webClient
                 .get()
-                .uri(String.format("%s/api/v3/accounts/%d/email", ACCOUNT_SERVICE, message.userId()))
+                .uri(String.format("%s/api/v3/accounts/%d/email", accountService, message.userId()))
                 .retrieve()
                 .bodyToMono(String.class);
 
         Mono<String> eventMono = webClient
                 .get()
-                .uri(String.format("%s/api/v3/event-query/%d/name", EVENT_SERVICE, message.eventId()))
+                .uri(String.format("%s/api/v3/event-query/%d/name", eventService, message.eventId()))
                 .retrieve()
                 .bodyToMono(String.class);
 

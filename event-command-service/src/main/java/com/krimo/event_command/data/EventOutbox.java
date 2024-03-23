@@ -17,7 +17,7 @@ public class EventOutbox {
 
     @Id
     @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @GenericGenerator(name = "uuid2")
     private UUID id;
 
     @Column(nullable = false)

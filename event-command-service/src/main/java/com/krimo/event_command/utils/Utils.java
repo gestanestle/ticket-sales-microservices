@@ -22,4 +22,8 @@ public class Utils {
 
         return payload;
     }
+
+    private Utils() {
+
+    }
 }

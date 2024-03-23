@@ -31,7 +31,7 @@ public class EventIndexerService {
 
     @KafkaListener(topics = "event_db.public.event")
     public void indexDocuments(String eventAgg) throws JsonProcessingException {
-        logger.info("Event Message: " + eventAgg);
+        logger.info("Event Message: {}", eventAgg);
 
         BrokerMessage msg = objectMapper.readValue(eventAgg, BrokerMessage.class);
 

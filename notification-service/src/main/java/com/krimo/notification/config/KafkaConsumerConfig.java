@@ -13,11 +13,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaConsumerConfig {
+class KafkaConsumerConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
-    private final static String GROUP_ID =  "ticket-purchase-consumer-group";
+    private static final String GROUP_ID =  "ticket-purchase-consumer-group";
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {

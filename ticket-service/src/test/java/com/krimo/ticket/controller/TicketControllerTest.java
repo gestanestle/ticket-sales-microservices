@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = TicketController.class)
 @Slf4j
-public class TicketControllerTest {
+class TicketControllerTest {
 
     @MockBean
     private TicketService ticketService;

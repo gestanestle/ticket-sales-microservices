@@ -13,7 +13,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class TicketRepositoryTest extends BaseContainerEnv {
+class TicketRepositoryTest extends BaseContainerEnv {
 
     @Autowired private EventRepository eventRepository;
     @Autowired private TicketRepository ticketRepository;

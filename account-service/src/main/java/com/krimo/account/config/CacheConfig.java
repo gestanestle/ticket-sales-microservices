@@ -21,7 +21,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Set;
 
 @Configuration
 public class CacheConfig {
@@ -52,14 +51,6 @@ public class CacheConfig {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-//        ObjectMapper objectMapper = objectMapper();
-//        objectMapper
-//                .activateDefaultTyping(
-//                        objectMapper.getPolymorphicTypeValidator(),
-//                        ObjectMapper.DefaultTyping.EVERYTHING,
-//                        JsonTypeInfo.As.PROPERTY
-//                );
-
         RedisSerializer<Object> serializer = new GenericJackson2JsonRedisSerializer(objectMapper());
 
 

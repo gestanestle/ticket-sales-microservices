@@ -43,4 +43,6 @@ public class Utils {
         return res;
     }
 
+    private Utils() {}
+
 }

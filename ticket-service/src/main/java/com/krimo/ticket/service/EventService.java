@@ -37,7 +37,7 @@ class EventService {
         }
 
         boolean isPresent = eventRepository.findById(payload.eventId()).isPresent();
-        Event event = null;
+        Event event;
         if (isPresent) {
             event = eventRepository.getReferenceById(payload.eventId());
             event.setIsActive(payload.isActive());

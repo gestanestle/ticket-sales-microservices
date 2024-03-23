@@ -302,6 +302,14 @@ services:
       retries: 5
       start_period: 40s
 
+  sonarqube:
+    image: sonarqube:9.9-community
+    container_name: sonarqube
+    networks:
+      - tsm
+    ports:
+      - "9000:9000"
+
 networks:
   tsm:
     name: tsm

@@ -1,7 +1,6 @@
 package com.krimo.account.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.*;
 
 import java.time.LocalDate;

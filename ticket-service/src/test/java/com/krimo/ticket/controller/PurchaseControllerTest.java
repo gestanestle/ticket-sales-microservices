@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = PurchaseController.class)
 @Slf4j
-public class PurchaseControllerTest {
+class PurchaseControllerTest {
 
     @MockBean
     private PurchaseService purchaseService;

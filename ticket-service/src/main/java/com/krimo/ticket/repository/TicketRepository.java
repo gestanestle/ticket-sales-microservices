@@ -1,6 +1,5 @@
 package com.krimo.ticket.repository;
 
-import com.krimo.ticket.models.Event;
 import com.krimo.ticket.models.Ticket;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

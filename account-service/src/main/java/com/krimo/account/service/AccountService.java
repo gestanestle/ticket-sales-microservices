@@ -38,6 +38,7 @@ public interface AccountService {
 class AccountServiceImpl implements AccountService {
 
     private static final String CACHE_NAME = "accounts";
+    private static final String CACHE_ERR = "Cache not found.";
     private final AccountRepository accountRepository;
     private final CacheManager cacheManager;
     private final ObjectMapper objectMapper;
@@ -75,7 +76,7 @@ class AccountServiceImpl implements AccountService {
 
         Cache accounts = cacheManager.getCache(CACHE_NAME);
         if (accounts == null) {
-            log.error("Cache not found.");
+            log.error(CACHE_ERR);
             return;
         }
 
@@ -95,7 +96,7 @@ class AccountServiceImpl implements AccountService {
     public AccountDTO getAccount(Long id) {
         Cache accounts = cacheManager.getCache(CACHE_NAME);
         if (accounts == null) {
-            log.error("Cache not found.");
+            log.error(CACHE_ERR);
             return mapToDTO(getAccFromDB(id));
         }
 
@@ -143,7 +144,7 @@ class AccountServiceImpl implements AccountService {
         log.info("Deleted account with ID " + id);
         Cache accounts = cacheManager.getCache(CACHE_NAME);
         if (accounts == null) {
-            log.error("Cache not found.");
+            log.error(CACHE_ERR);
             return;
         }
         accounts.evict(id);

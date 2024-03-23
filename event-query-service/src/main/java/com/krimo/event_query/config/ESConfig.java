@@ -48,7 +48,6 @@ public class ESConfig {
         ElasticsearchTransport transport = new RestClientTransport(
                 restClient, new JacksonJsonpMapper());
 
-        // And create the API clientElasticsearchClient(transport);
         return new ElasticsearchClient(transport);
     }
 
